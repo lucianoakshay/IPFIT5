@@ -85,6 +85,8 @@ Menu
         print("Exiting script the log files are written to: ")
         sys.exit(0)
 
+
+
 if __name__ == "__main__":
     Main_program().run()
 # start menu here and call individual scripts
