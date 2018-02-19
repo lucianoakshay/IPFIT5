@@ -1,9 +1,15 @@
 import os
 import sys
 import hashlib as hash
+import logging
+import opdracht_IP
 class Main_program:
     BUFFERSIZE =65536
+    logger=None
+    p = None
     def __init__(self):
+        self.p = opdracht_IP.IP_filtering()
+        logger =self.Logging()
         self.choices = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
@@ -11,6 +17,16 @@ class Main_program:
                 "4": self.Easy_hash_calc,
                 "5": self.quit
                 }
+
+    def Logging(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        return self.logger
 
     def bereken_hash(self,bestand):
         sha256hash = hash.sha3_256()
@@ -34,28 +50,38 @@ Menu
 """)
 
     def run(self):
+        self.logger.info("Starting Main_Script")
         while True:
             self.display_menu()
             choice = input("Enter an option: ")
             action = self.choices.get(choice)
+            self.logger.info("User input: %s",choice)
             if action:
                 action()
             else:
+                self.logger.info("Invalid input, restarting script")
                 print("{0} is not a valid choice".format(choice))
 
     def IP_script(self):
+        # import opdracht_IP
+        self.logger.info("Starting IP_Script")
+        self.p.run_ip()
         print("This is the IP_script that's now running")
 
     def Foto_script(self):
+        self.logger.info("Starting Foto_Script")
+
         print("THis is the Foto_script that's now running")
 
     def Gehakt_script(self):
+        self.logger.info("Starting Gehakt_Script")
         print("This is the Gehakt_script that's now running")
 
     def Easy_hash_calc(self):
         print("hash calculator")
 
     def quit(self):
+        self.logger.info("Exiting script")
         print("Exiting script the log files are written to: ")
         sys.exit(0)
 
