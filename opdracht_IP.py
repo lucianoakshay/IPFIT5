@@ -2,7 +2,6 @@ import sys
 # if (sys.version_info < (3, 0)):
 #    raise Exception('script should not be run with python2.x')
 
-import hashlib as hash
 import datetime
 from time import gmtime,strftime
 import os
@@ -27,7 +26,7 @@ def open_bestand(aantal):
     #fout afhandeling
     for i in range(aantal):
         lijst.append(input('geef bestand op'))
-    Filter_IP(lijst)
+        Filter_IP(lijst)
 
 # moet in main zodat je het hier kan aanroepen voor elk input bestand.
 
@@ -43,7 +42,16 @@ def Filter_IP (bestand):
     pcap = dpkt.pcap.Reader(pcap)
     for timestamp,buf in pcap:
         eth = dpkt.ethernet.Ethernet(buf)
+        if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
+            ipv6=eth.data
+            IP_list[convert_IP(ipv6.src)]+=1
+            IP_list[convert_IP(ipv6.dst)]+=1
+            print(convert_IP(ipv6.src))
+            print(convert_IP(ipv6.dst))
+            continue
+
         ip=eth.data
+
         if not isinstance(eth.data, dpkt.ip.IP):
            print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
            continue
@@ -75,12 +83,18 @@ def compare(input_lijst,IPlijst):
     for rij in bestand:
         rij = rij.strip('\n')
         temp_lijst.append(rij)
-
-    for ip in list(IPlijst.keys()):
-        if ip in  temp_lijst:
-            match_list.append(ip)
+    if temp_lijst:
+        for ip in list(IPlijst.keys()):
+            if ip in  temp_lijst:
+                match_list.append(ip)
+    else:
+        print("file is empty")
+    if match_list:
+        return(match_list)
+    else:
+        print("no match")
     bestand.close()
-    return(match_list)
+
 
 def json_time_converter(timestamp):
     if isinstance(timestamp, datetime.datetime):
@@ -187,9 +201,26 @@ def DIG(domain):
 
         except Exception as e:
             continue  # or pass
+def timeline(bestand,ip_list):
+    pcap =open (os.path.join(sys.path[0], bestand),'rb')
+    pcap = dpkt.pcap.Reader(pcap)
 
-WHOIS(compare('IP.txt',Filter_IP('003hslmwa.pcap')))
+    for timestamp,buf in pcap:
+        eth = dpkt.ethernet.Ethernet(buf)
+        for ip in ip_list:
+            if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
+                ipv6=eth.data
+                if convert_IP(ipv6.src)==ip:
+                    print(ipv6)
+            if eth.type ==dpkt.ethernet.ETH_TYPE_IP:
+                ipv4 = eth.data
+                if(convert_IP(ipv4.src))==ip:
+                    print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
+                    print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
+          (convert_IP(ipv4.src), convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
 
+timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
+    # 184.50.160.199
     # bestand =bestand
     # file = open(bestand, 'r')
     # pcap =dpkt.pcap.Reader(file)
