@@ -21,8 +21,11 @@ from tld import get_tld
 
 import socket
 from collections import Counter
-from Main import Main_program
+import Main
+
+
 class IP_filtering:
+
     IDS = [
             'A',
             'NS',
@@ -92,22 +95,23 @@ class IP_filtering:
             'TA',
             'DLV',
         ]
-    def __init__(self):
 
-        back = Main_program()
+    def __init__(self):
 
         self.choices = {
                 "1": self.file_input,
                 "2": self.back
                 }
         print()
+
     def display_menu(self):
                 print("""
 Menu
 1. Input_file
 2. Go_back
 """)
-    def run(self):
+
+    def run_ip(self):
 
         while True:
             self.display_menu()
@@ -119,7 +123,7 @@ Menu
                 print("{0} is not a valid choice".format(choice))
 
     def back(self):
-        Main_program().run()
+        Main.Main_program().run()
 
     def file_input(self):
         lijst = []
