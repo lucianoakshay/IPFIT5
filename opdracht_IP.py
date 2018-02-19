@@ -21,7 +21,7 @@ from tld import get_tld
 
 import socket
 from collections import Counter
-import Main
+import User_Interface
 
 
 class IP_filtering:
@@ -123,7 +123,7 @@ Menu
                 print("{0} is not a valid choice".format(choice))
 
     def back(self):
-        Main.Main_program().run()
+        User_Interface.Main_program().run()
 
     def file_input(self):
         lijst = []
@@ -257,7 +257,7 @@ Menu
                         print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
               (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
 if __name__ == "__main__":
-    IP_filtering().run()
+    IP_filtering().run_ip()
 # timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
     # 184.50.160.199
     # bestand =bestand
