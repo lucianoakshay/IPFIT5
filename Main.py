@@ -1,11 +1,12 @@
 import os
+import sys
 class Main_program:
     BUFFERSIZE =65536
     def __init__(self):
         self.choices = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
-                "3": self._Gehakt_script,
+                "3": self.Gehakt_script,
                 "4": self.Easy_hash_calc,
                 "5": self.quit
                 }
@@ -41,7 +42,24 @@ Menu
             else:
                 print("{0} is not a valid choice".format(choice))
 
+    def IP_script(self):
+        print("This is the IP_script that's now running")
 
+    def Foto_script(self):
+        print("THis is the Foto_script that's now running")
+
+    def Gehakt_script(self):
+        print("This is the Gehakt_script that's now running")
+
+    def Easy_hash_calc(self):
+        print("hash calculator")
+
+    def quit(self):
+        print("Exiting script the log files are written to: ")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    Main_program().run()
 # start menu here and call individual scripts
 #do something with logging
 #error handling
