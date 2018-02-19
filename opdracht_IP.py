@@ -11,6 +11,7 @@ import dns.resolver
 from ipwhois import IPWhois
 import dpkt
 import pythonwhois
+import logging
 
 from tld import get_tld
 
@@ -20,15 +21,115 @@ from tld import get_tld
 
 import socket
 from collections import Counter
+from Main import Main_program
 class IP_filtering:
+    IDS = [
+            'A',
+            'NS',
+            'MD',
+            'MF',
+            'CNAME',
+            'SOA',
+            'MB',
+            'MG',
+            'MR',
+            'NULL',
+            'WKS',
+            'PTR',
+            'HINFO',
+            'MINFO',
+            'MX',
+            'TXT',
+            'RP',
+            'AFSDB',
+            'X25',
+            'ISDN',
+            'RT',
+            'NSAP',
+            'NSAP-PTR',
+            'SIG',
+            'KEY',
+            'PX',
+            'GPOS',
+            'AAAA',
+            'LOC',
+            'NXT',
+            'SRV',
+            'NAPTR',
+            'KX',
+            'CERT',
+            'A6',
+            'DNAME',
+            'OPT',
+            'APL',
+            'DS',
+            'SSHFP',
+            'IPSECKEY',
+            'RRSIG',
+            'NSEC',
+            'DNSKEY',
+            'DHCID',
+            'NSEC3',
+            'NSEC3PARAM',
+            'TLSA',
+            'HIP',
+            'CDS',
+            'CDNSKEY',
+            'CSYNC',
+            'SPF',
+            'UNSPEC',
+            'EUI48',
+            'EUI64',
+            'TKEY',
+            'TSIG',
+            'IXFR',
+            'AXFR',
+            'MAILB',
+            'MAILA',
+            'ANY',
+            'URI',
+            'CAA',
+            'TA',
+            'DLV',
+        ]
     def __init__(self):
+
+        back = Main_program()
+
+        self.choices = {
+                "1": self.file_input,
+                "2": self.back
+                }
         print()
-    def open_bestand(self,aantal):
+    def display_menu(self):
+                print("""
+Menu
+1. Input_file
+2. Go_back
+""")
+    def run(self):
+
+        while True:
+            self.display_menu()
+            choice = input("Enter an option: ")
+            action = self.choices.get(choice)
+            if action:
+                action()
+            else:
+                print("{0} is not a valid choice".format(choice))
+
+    def back(self):
+        Main_program().run()
+
+    def file_input(self):
         lijst = []
+        aantal =input('Input the ammount of files')
         #fout afhandeling
         for i in range(aantal):
             lijst.append(input('geef bestand op'))
-            self.Filter_IP(lijst)
+
+
+        self.Filter_IP(lijst)
 
     # moet in main zodat je het hier kan aanroepen voor elk input bestand.
 
@@ -39,7 +140,6 @@ class IP_filtering:
         temp_ip=''
         bestand=bestand
         # for bestand in bestanden:
-
         pcap =open (os.path.join(sys.path[0], bestand),'rb')
         pcap = dpkt.pcap.Reader(pcap)
         for timestamp,buf in pcap:
@@ -123,78 +223,9 @@ class IP_filtering:
                 file.write(json.dumps(indicator,default=self.json_time_converter))
 
     def DIG(self,domain):
-        ids = [
-            'NONE',
-            'A',
-            'NS',
-            'MD',
-            'MF',
-            'CNAME',
-            'SOA',
-            'MB',
-            'MG',
-            'MR',
-            'NULL',
-            'WKS',
-            'PTR',
-            'HINFO',
-            'MINFO',
-            'MX',
-            'TXT',
-            'RP',
-            'AFSDB',
-            'X25',
-            'ISDN',
-            'RT',
-            'NSAP',
-            'NSAP-PTR',
-            'SIG',
-            'KEY',
-            'PX',
-            'GPOS',
-            'AAAA',
-            'LOC',
-            'NXT',
-            'SRV',
-            'NAPTR',
-            'KX',
-            'CERT',
-            'A6',
-            'DNAME',
-            'OPT',
-            'APL',
-            'DS',
-            'SSHFP',
-            'IPSECKEY',
-            'RRSIG',
-            'NSEC',
-            'DNSKEY',
-            'DHCID',
-            'NSEC3',
-            'NSEC3PARAM',
-            'TLSA',
-            'HIP',
-            'CDS',
-            'CDNSKEY',
-            'CSYNC',
-            'SPF',
-            'UNSPEC',
-            'EUI48',
-            'EUI64',
-            'TKEY',
-            'TSIG',
-            'IXFR',
-            'AXFR',
-            'MAILB',
-            'MAILA',
-            'ANY',
-            'URI',
-            'CAA',
-            'TA',
-            'DLV',
-        ]
 
-        for record in ids:
+
+        for record in self.IDS:
             try:
                 answers = dns.resolver.query(domain, record)
                 for rdata in answers:
@@ -212,15 +243,18 @@ class IP_filtering:
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6=eth.data
                     if self.convert_IP(ipv6.src)==ip:
-                        print(ipv6)
+                        print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
+                        print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
+              (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst), ipv6.len, ipv6.ttl))
                 if eth.type ==dpkt.ethernet.ETH_TYPE_IP:
                     ipv4 = eth.data
                     if(self.convert_IP(ipv4.src))==ip:
                         print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                         print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
               (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
-
-timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
+if __name__ == "__main__":
+    IP_filtering().run()
+# timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
     # 184.50.160.199
     # bestand =bestand
     # file = open(bestand, 'r')
