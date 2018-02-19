@@ -1,5 +1,6 @@
 import os
 import sys
+import hashlib as hash
 class Main_program:
     BUFFERSIZE =65536
     def __init__(self):
