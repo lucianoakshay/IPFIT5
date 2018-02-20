@@ -23,11 +23,9 @@ from tld import get_tld
 import socket
 from collections import Counter
 import User_Interface
-
 # need to fix write function
 
 class IP_filtering:
-
     IDS = [
             'A',
             'NS',
@@ -99,7 +97,6 @@ class IP_filtering:
         ]
 
     def __init__(self):
-
         self.choices = {
                 "1": self.file_input,
                 "2": self.back,
@@ -119,6 +116,7 @@ Menu
 
         while True:
             self.display_menu()
+            User_Interface.Main_program().Logging().info("testing")
             choice = input("Enter an option: ")
             action = self.choices.get(choice)
             if action:
@@ -253,7 +251,7 @@ Menu
 
             except Exception as e:
                 continue  # or pass
-
+    # dit is dubbel op kan waarschijnlijk verplaatst worden naar de functie die het pcap bestand opent.
     def timeline(self, bestand, ip_list):
         pcap =open (os.path.join(sys.path[0], bestand),'rb')
         pcap = dpkt.pcap.Reader(pcap)
