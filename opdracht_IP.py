@@ -18,6 +18,8 @@ from tld import get_tld
 
 # else:
 #     raise ImportError('error')
+# to do
+# make sure that the input files are add here also make this class more fault tolerant
 
 
 import socket
@@ -252,6 +254,7 @@ Menu
             except Exception as e:
                 continue  # or pass
     # dit is dubbel op kan waarschijnlijk verplaatst worden naar de functie die het pcap bestand opent.
+
     def timeline(self, bestand, ip_list):
         pcap =open (os.path.join(sys.path[0], bestand),'rb')
         pcap = dpkt.pcap.Reader(pcap)
