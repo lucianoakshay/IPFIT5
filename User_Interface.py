@@ -16,7 +16,7 @@ class Main_program:
                 "4": self.Easy_hash_calc,
                 "5": self.quit
                 }
-
+    # bestandsnaam toevoegen
     def Logging(self):
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
@@ -36,8 +36,10 @@ class Main_program:
                     sha256hash.update(file_buffer)
                     file_buffer= file.read(self.BUFFERSIZE)
         else:
-            print("File does not exist or is not accessible")
+            self.Logging(bestand+": File does not exist or is not accessible")
+
         return(sha256hash.hexdigest())
+
     def display_menu(self):
         print("""
 Menu
