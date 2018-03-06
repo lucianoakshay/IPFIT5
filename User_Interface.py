@@ -9,13 +9,15 @@ class Main_program:
     p = None
     def __init__(self):
         self.p = opdracht_IP.IP_filtering()
-        self.choices = {
+        self.choices_main = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
                 "3": self.Gehakt_script,
                 "4": self.Easy_hash_calc,
                 "5": self.quit
                 }
+        self.e01=False
+
     # bestandsnaam toevoegen
     def Logging(self):
         logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class Main_program:
 
         return(sha256hash.hexdigest())
 
-    def display_menu(self):
+    def display_main_menu(self):
         print("""
 Menu
 1. Run_IP_script
@@ -50,12 +52,14 @@ Menu
 5. Quit
 """)
 
+
+
     def run(self):
         self.Logging().info("Starting Main_Script")
         while True:
-            self.display_menu()
+            self.display_main_menu()
             choice = input("Enter an option: ")
-            action = self.choices.get(choice)
+            action = self.choices_main.get(choice)
             self.Logging().info("User input: %s",choice)
             if action:
                 action()
@@ -64,22 +68,64 @@ Menu
                 print("{0} is not a valid choice".format(choice))
 
     def IP_script(self):
+
+
         # import opdracht_IP
         self.Logging().info("Starting IP_Script")
-        self.p.run_ip()
+        self.p.convert_IP(self.Input_file())
         print("This is the IP_script that's now running")
 
     def Foto_script(self):
+        self.e01=True
         self.Logging().info("Starting Foto_Script")
 
         print("THis is the Foto_script that's now running")
 
     def Gehakt_script(self):
+        self.e01=True
         self.Logging().info("Starting Gehakt_Script")
         print("This is the Gehakt_script that's now running")
 
     def Easy_hash_calc(self):
         print("hash calculator")
+
+    def Input_file(self):
+        file_list=[]
+        if self.e01:
+
+            print("Please enter an file name:")
+            filename =input()
+            if self.exists(filename):
+
+                return filename
+            else:
+                self.Logging().info("File: "+filename+"doesn't exists")
+                print("File doesn't exists, restarting script...")
+                self.run()
+
+        else:
+            aantal = int(input('Input the ammount of files'))
+        #fout afhandeling
+            for i in range(aantal):
+                test = input('Input file: ')
+                if(self.exists(test)):
+
+                    file_list.append(os.path.abspath(test))
+                else:
+                    self.Logging().info("File: "+test+" doesn't exists")
+
+                    print("File:"+test+ "doesn't exists, restarting script...")
+                    # file_list.remove(test)
+                    # maybe add option to continu after wrong file name
+                    self.run()
+            return test
+
+    def exists(self,file):
+
+        if os.path.exists(file):
+            return True
+        else:
+            return False
 
     def quit(self):
         self.Logging().info("Exiting script")

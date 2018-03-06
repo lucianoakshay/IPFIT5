@@ -99,11 +99,11 @@ class IP_filtering:
         ]
 
     def __init__(self):
-        self.choices = {
-                "1": self.file_input,
-                "2": self.back,
-                "3": self.quit
-                }
+        # self.choices = {
+        #         "1": self.file_input,
+        #         "2": self.back,
+        #         "3": self.quit
+        #         }
         print()
 
     def display_menu(self):
@@ -114,23 +114,23 @@ Menu
 3. Quit
 """)
 
-    def run_ip(self):
-
-        while True:
-            self.display_menu()
-            User_Interface.Main_program().Logging().info("testing")
-            choice = input("Enter an option: ")
-            action = self.choices.get(choice)
-            if action:
-                action()
-            else:
-                print("{0} is not a valid choice".format(choice))
-
-    def back(self):
-        User_Interface.Main_program().run()
-
-    def quit(self):
-        sys.exit(0)
+    # def run_ip(self):
+    #
+    #     while True:
+    #         self.display_menu()
+    #         User_Interface.Main_program().Logging().info("testing")
+    #         choice = input("Enter an option: ")
+    #         action = self.choices.get(choice)
+    #         if action:
+    #             action()
+    #         else:
+    #             print("{0} is not a valid choice".format(choice))
+    #
+    # def back(self):
+    #     User_Interface.Main_program().run()
+    #
+    # def quit(self):
+    #     sys.exit(0)
 
     def file_input(self):
         lijst = []
@@ -142,6 +142,7 @@ Menu
             test = input('Input file: ')
             print (test)
             lijst.append(test)
+        #onderstaande kan in Filter_IP script
         dictionary.update(self.Filter_IP(lijst))
         print(dictionary)
         self.write('test', dictionary)
@@ -276,6 +277,7 @@ Menu
                         print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                         print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
                         (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
+
 
 
 if __name__ == "__main__":
