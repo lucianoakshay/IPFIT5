@@ -18,15 +18,16 @@ class Main_program:
                 }
         self.e01=False
 
-    # bestandsnaam toevoegen
+    # creates multiple lines need to be fixed
     def Logging(self):
         logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        if not len(logger.handlers):
+            logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
+            handler.setLevel(logging.INFO)
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
         return logger
 
     def bereken_hash(self,bestand):
@@ -79,7 +80,7 @@ Menu
         self.e01=True
         self.Logging().info("Starting Foto_Script")
 
-        print("THis is the Foto_script that's now running")
+        print("This is the Foto_script that's now running")
 
     def Gehakt_script(self):
         self.e01=True
@@ -105,7 +106,6 @@ Menu
 
         else:
             aantal = int(input('Input the ammount of files'))
-        #fout afhandeling
             for i in range(aantal):
                 test = input('Input file: ')
                 if(self.exists(test)):
