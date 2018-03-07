@@ -153,9 +153,13 @@ Menu
 
     def Filter_IP (self, bestanden):
         IP_list=Counter()
+        hashes={}
         temp_ip=''
         bestanden=bestanden
+        print(bestanden)
         for bestand in bestanden:
+            # hashes[bestand]=User_Interface.Main_program.bereken_hash(bestand)
+
             # for bestand in bestanden:
             # Notice in the final program os.path.join sys.path needs to be removed.
             # Because bestand will be converted to absolute paths.
@@ -167,8 +171,8 @@ Menu
                     ipv6=eth.data
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
-                    print(self.convert_IP(ipv6.src))
-                    print(self.convert_IP(ipv6.dst))
+                    # print(self.convert_IP(ipv6.src))
+                    # print(self.convert_IP(ipv6.dst))
                     continue
 
                 ip=eth.data
@@ -178,7 +182,7 @@ Menu
                    continue
                 IP_list[self.convert_IP(ip.src)]+=1
                 IP_list[self.convert_IP(ip.dst)]+=1
-        return IP_list
+        print( IP_list)
 
     def convert_IP(self,ip_adress):
         try:
@@ -237,7 +241,7 @@ Menu
 
                 #nog opzoek naar een betere whois, kan raw evt weglaten.
                 dict =(pythonwhois.get_whois(get_tld('http://'+socket.getfqdn(ip))))
-
+                del dict["raw"]
                 print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
                 # print (dict)
                 indicator.update(dict)
@@ -280,12 +284,12 @@ Menu
 
 
 
-if __name__ == "__main__":
-    IP_filtering().run_ip()
+# if __name__ == "__main__":
+#     IP_filtering().run_ip()
 # timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
     # 184.50.160.199
     # bestand =bestand
     # file = open(bestand, 'r')
     # pcap =dpkt.pcap.Reader(file)
     # for ts, buf in pcap:
-    #     eth = dpkt.ethernet.Ethernet(buf)
+    #eth = dpkt.ethernet.Ethernet(buf)
