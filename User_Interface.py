@@ -1,3 +1,5 @@
+# gezamenlijk deel Groep 1
+#
 import os
 import sys
 import hashlib as hash

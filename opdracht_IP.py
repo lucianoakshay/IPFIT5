@@ -1,3 +1,7 @@
+# Individuele opdracht IP
+# Auteur: Koen van der sijs
+# Student nr: s1090241
+#
 import sys
 # if (sys.version_info < (3, 0)):
 #    raise Exception('script should not be run with python2.x')
