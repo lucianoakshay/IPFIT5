@@ -1,5 +1,6 @@
 import os
 import User_Interface
+
 #User input requested
 user_input = input("Voer de master directory in: ")
 
@@ -16,7 +17,7 @@ def file_list(input):
             hash_waarde = User_Interface.Main_program.bereken_hash(test,current_dir)
             filename, file_extension = os.path.splitext(current_dir)
             file_dict[filename] = {"Extension":file_extension, "Hash value":hash_waarde}
-        print(file_dict)
+    print(file_dict)
 
 
 file_list(user_input)
