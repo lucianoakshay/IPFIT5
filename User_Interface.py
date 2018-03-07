@@ -73,7 +73,7 @@ Menu
 
         # import opdracht_IP
         self.Logging().info("Starting IP_Script")
-        self.p.convert_IP(self.Input_file())
+        self.p.Filter_IP(self.input_pcap_file())
         print("This is the IP_script that's now running")
 
     def Foto_script(self):
@@ -89,42 +89,34 @@ Menu
 
     def Easy_hash_calc(self):
         print("hash calculator")
+    # needs to build in check for file extension.
+    def input_e01_file(self):
 
-    def Input_file(self):
-        file_list=[]
-        if self.e01:
+        print("Please enter the filename of the e01:")
+        filename =input()
 
-            print("Please enter an file name:")
-            filename =input()
-            if self.exists(filename):
+        if self.exists(filename):
+            return filename
 
-                return filename
-            else:
-                self.Logging().info("File: "+filename+"doesn't exists")
-                print("File doesn't exists, restarting script...")
-                self.run()
 
-        else:
-            aantal = int(input('Input the ammount of files'))
-            for i in range(aantal):
-                test = input('Input file: ')
-                if(self.exists(test)):
 
-                    file_list.append(os.path.abspath(test))
-                else:
-                    self.Logging().info("File: "+test+" doesn't exists")
-
-                    print("File:"+test+ "doesn't exists, restarting script...")
-                    # file_list.remove(test)
-                    # maybe add option to continu after wrong file name
-                    self.run()
-            return test
+    def input_pcap_file(self):
+        file_list = []
+        amount = int(input('Input the ammount of .pcap files you want to filter'))
+        for i in range(amount):
+            test = input('Input pcap file: ')
+            if self.exists(test):
+                print(self.bereken_hash(test))
+                file_list.append(os.path.abspath(test))
+        return file_list
 
     def exists(self,file):
 
         if os.path.exists(file):
             return True
         else:
+            print("File:"+file+ "doesn't exists, restarting script...")
+            self.run()
             return False
 
     def quit(self):
