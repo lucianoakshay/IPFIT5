@@ -126,7 +126,7 @@ Menu
         sys.exit(0)
 
 
-#
+#this function will run the main function when script is called
 if __name__ == "__main__":
     Main_program().run()
 # start menu here and call individual scripts
