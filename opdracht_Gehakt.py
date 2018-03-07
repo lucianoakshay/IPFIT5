@@ -1,9 +1,10 @@
 import os
-
+import User_Interface
 #User input requested
 user_input = input("Voer de master directory in: ")
 
 def file_list(input):
+    test = User_Interface.Main_program()
     #Dictionary om alle files met hashes erbij op te slaan
     file_dict = {}
     hashie = 0
@@ -13,8 +14,10 @@ def file_list(input):
     for subdir, dirs, files in os.walk(user_input):
         for file in files:
             current_dir = (os.path.join(subdir, file))
+            hashie = User_Interface.Main_program.bereken_hash(test,current_dir)
             filename, file_extension = os.path.splitext(current_dir)
             file_dict[filename] = {"Extension":file_extension, "Hash value":hashie}
-            print(file_dict)
+        print(file_dict)
+
 
 file_list(user_input)
