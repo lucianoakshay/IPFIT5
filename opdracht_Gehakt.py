@@ -2,9 +2,6 @@ import os
 import User_Interface
 from tqdm import tqdm
 
-#User input requested
-# user_input = input("Voer de master directory in: ")
-
 def file_list(input):
     test = User_Interface.Main_program()
     #Dictionary om alle files met hashes erbij op te slaan
