@@ -26,7 +26,7 @@ import socket
 from collections import Counter
 import User_Interface
 # need to fix write function
-
+# list of all possible dns records
 class IP_filtering:
     IDS = [
             'A',
@@ -105,7 +105,7 @@ class IP_filtering:
         #         "3": self.quit
         #         }
         print()
-
+    # deprecated function will possibly be removed
     def display_menu(self):
                 print("""
 Menu
@@ -131,7 +131,7 @@ Menu
     #
     # def quit(self):
     #     sys.exit(0)
-
+    # also absolete class this will be handeled in the user interface class
     def file_input(self):
         lijst = []
         dictionary={}
@@ -150,7 +150,7 @@ Menu
     # moet in main zodat je het hier kan aanroepen voor elk input bestand.
 
 
-
+    # class that will filter the IP adresses that resides in an pcap file
     def Filter_IP (self, bestanden):
         IP_list=Counter()
         hashes={}
@@ -183,13 +183,14 @@ Menu
                 IP_list[self.convert_IP(ip.src)]+=1
                 IP_list[self.convert_IP(ip.dst)]+=1
         print( IP_list)
-
+    # will be used to convert an hex ip to an human readable format
     def convert_IP(self,ip_adress):
         try:
             return socket.inet_ntop(socket.AF_INET, ip_adress)
         except ValueError:
             return socket.inet_ntop(socket.AF_INET6, ip_adress)
 
+    #  will be used to write out the list of IP-adreses
     def write (self, filename, input):
         with open(os.path.join(sys.path[0],str(date.today())+'.txt'),'w+') as file:
             # file.write(filename + ':')strftime("%Y-%m-%d %H:%M", gmtime()))
@@ -200,7 +201,7 @@ Menu
                 print(waarde)
                 file.write( '{0:<16} {1:>8}'.format(ip,str(waarde))+'\n')
             file.flush()
-
+    # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
     def compare(self, input_lijst, IPlijst):
         temp_lijst = []
         match_list=[]
@@ -225,7 +226,7 @@ Menu
     def json_time_converter(self, timestamp):
         if isinstance(timestamp, datetime.datetime):
             return timestamp.__str__()
-
+    # function to get the whois information about an
     def WHOIS(self,match_list):
         print (match_list)
 
@@ -247,7 +248,7 @@ Menu
                 indicator.update(dict)
                 # string = string.strip('['+']'+"\\n")
                 file.write(json.dumps(indicator,default=self.json_time_converter))
-
+    # function to preform a dig on a domain
     def dig(self, domain):
 
         for record in self.IDS:
@@ -260,6 +261,7 @@ Menu
                 continue  # or pass
     # dit is dubbel op kan waarschijnlijk verplaatst worden naar de functie die het pcap bestand opent.
 
+    # function to create a timelin, needs to be adjusted so that it can show the ports and the protocol.
     def timeline(self, bestand, ip_list):
         pcap =open (os.path.join(sys.path[0], bestand),'rb')
         pcap = dpkt.pcap.Reader(pcap)
