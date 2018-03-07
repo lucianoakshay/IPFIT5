@@ -1,5 +1,6 @@
 import os
 import User_Interface
+from tqdm import tqdm
 
 #User input requested
 # user_input = input("Voer de master directory in: ")
@@ -11,7 +12,7 @@ def file_list(input):
     # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
     # Vervolgens worden de subdir en de file gejoind in de variabele current_dir
     # Hierna wordt een betreffende directory meegegeven aan een splitext commando die de extensie van de file afhaald
-    for subdir, dirs, files in os.walk(input):
+    for subdir, dirs, files in tqdm(os.walk(input)):
         for file in files:
             current_dir = (os.path.join(subdir, file))
             hash_waarde = User_Interface.Main_program.bereken_hash(test,current_dir)
