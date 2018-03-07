@@ -3,6 +3,8 @@ import sys
 import hashlib as hash
 import logging
 import opdracht_IP
+import opdracht_Gehakt
+
 class Main_program:
     BUFFERSIZE =65536
 
@@ -85,6 +87,7 @@ Menu
     def Gehakt_script(self):
         self.e01=True
         self.Logging().info("Starting Gehakt_Script")
+        opdracht_Gehakt.file_list(input("Input the master directory: "))
         print("This is the Gehakt_script that's now running")
 
     def Easy_hash_calc(self):
