@@ -99,11 +99,11 @@ class IP_filtering:
         ]
 
     def __init__(self):
-        self.choices = {
-                "1": self.file_input,
-                "2": self.back,
-                "3": self.quit
-                }
+        # self.choices = {
+        #         "1": self.file_input,
+        #         "2": self.back,
+        #         "3": self.quit
+        #         }
         print()
 
     def display_menu(self):
@@ -114,23 +114,23 @@ Menu
 3. Quit
 """)
 
-    def run_ip(self):
-
-        while True:
-            self.display_menu()
-            User_Interface.Main_program().Logging().info("testing")
-            choice = input("Enter an option: ")
-            action = self.choices.get(choice)
-            if action:
-                action()
-            else:
-                print("{0} is not a valid choice".format(choice))
-
-    def back(self):
-        User_Interface.Main_program().run()
-
-    def quit(self):
-        sys.exit(0)
+    # def run_ip(self):
+    #
+    #     while True:
+    #         self.display_menu()
+    #         User_Interface.Main_program().Logging().info("testing")
+    #         choice = input("Enter an option: ")
+    #         action = self.choices.get(choice)
+    #         if action:
+    #             action()
+    #         else:
+    #             print("{0} is not a valid choice".format(choice))
+    #
+    # def back(self):
+    #     User_Interface.Main_program().run()
+    #
+    # def quit(self):
+    #     sys.exit(0)
 
     def file_input(self):
         lijst = []
@@ -142,6 +142,7 @@ Menu
             test = input('Input file: ')
             print (test)
             lijst.append(test)
+        #onderstaande kan in Filter_IP script
         dictionary.update(self.Filter_IP(lijst))
         print(dictionary)
         self.write('test', dictionary)
@@ -152,9 +153,13 @@ Menu
 
     def Filter_IP (self, bestanden):
         IP_list=Counter()
+        hashes={}
         temp_ip=''
         bestanden=bestanden
+        print(bestanden)
         for bestand in bestanden:
+            # hashes[bestand]=User_Interface.Main_program.bereken_hash(bestand)
+
             # for bestand in bestanden:
             # Notice in the final program os.path.join sys.path needs to be removed.
             # Because bestand will be converted to absolute paths.
@@ -166,8 +171,8 @@ Menu
                     ipv6=eth.data
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
-                    print(self.convert_IP(ipv6.src))
-                    print(self.convert_IP(ipv6.dst))
+                    # print(self.convert_IP(ipv6.src))
+                    # print(self.convert_IP(ipv6.dst))
                     continue
 
                 ip=eth.data
@@ -177,7 +182,7 @@ Menu
                    continue
                 IP_list[self.convert_IP(ip.src)]+=1
                 IP_list[self.convert_IP(ip.dst)]+=1
-        return IP_list
+        print( IP_list)
 
     def convert_IP(self,ip_adress):
         try:
@@ -236,7 +241,7 @@ Menu
 
                 #nog opzoek naar een betere whois, kan raw evt weglaten.
                 dict =(pythonwhois.get_whois(get_tld('http://'+socket.getfqdn(ip))))
-
+                del dict["raw"]
                 print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
                 # print (dict)
                 indicator.update(dict)
@@ -278,12 +283,13 @@ Menu
                         (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
 
 
-if __name__ == "__main__":
-    IP_filtering().run_ip()
+
+# if __name__ == "__main__":
+#     IP_filtering().run_ip()
 # timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
     # 184.50.160.199
     # bestand =bestand
     # file = open(bestand, 'r')
     # pcap =dpkt.pcap.Reader(file)
     # for ts, buf in pcap:
-    #     eth = dpkt.ethernet.Ethernet(buf)
+    #eth = dpkt.ethernet.Ethernet(buf)

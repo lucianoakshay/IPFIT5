@@ -9,22 +9,25 @@ class Main_program:
     p = None
     def __init__(self):
         self.p = opdracht_IP.IP_filtering()
-        self.choices = {
+        self.choices_main = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
                 "3": self.Gehakt_script,
                 "4": self.Easy_hash_calc,
                 "5": self.quit
                 }
-    # bestandsnaam toevoegen
+        self.e01=False
+
+    # creates multiple lines need to be fixed
     def Logging(self):
         logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        if not len(logger.handlers):
+            logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
+            handler.setLevel(logging.INFO)
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
         return logger
 
     def bereken_hash(self,bestand):
@@ -40,7 +43,7 @@ class Main_program:
 
         return(sha256hash.hexdigest())
 
-    def display_menu(self):
+    def display_main_menu(self):
         print("""
 Menu
 1. Run_IP_script
@@ -50,12 +53,14 @@ Menu
 5. Quit
 """)
 
+
+
     def run(self):
         self.Logging().info("Starting Main_Script")
         while True:
-            self.display_menu()
+            self.display_main_menu()
             choice = input("Enter an option: ")
-            action = self.choices.get(choice)
+            action = self.choices_main.get(choice)
             self.Logging().info("User input: %s",choice)
             if action:
                 action()
@@ -64,22 +69,55 @@ Menu
                 print("{0} is not a valid choice".format(choice))
 
     def IP_script(self):
+
+
         # import opdracht_IP
         self.Logging().info("Starting IP_Script")
-        self.p.run_ip()
+        self.p.Filter_IP(self.input_pcap_file())
         print("This is the IP_script that's now running")
 
     def Foto_script(self):
+        self.e01=True
         self.Logging().info("Starting Foto_Script")
 
-        print("THis is the Foto_script that's now running")
+        print("This is the Foto_script that's now running")
 
     def Gehakt_script(self):
+        self.e01=True
         self.Logging().info("Starting Gehakt_Script")
         print("This is the Gehakt_script that's now running")
 
     def Easy_hash_calc(self):
         print("hash calculator")
+    # needs to build in check for file extension.
+    def input_e01_file(self):
+
+        print("Please enter the filename of the e01:")
+        filename =input()
+
+        if self.exists(filename):
+            return filename
+
+
+
+    def input_pcap_file(self):
+        file_list = []
+        amount = int(input('Input the ammount of .pcap files you want to filter'))
+        for i in range(amount):
+            test = input('Input pcap file: ')
+            if self.exists(test):
+                print(self.bereken_hash(test))
+                file_list.append(os.path.abspath(test))
+        return file_list
+
+    def exists(self,file):
+
+        if os.path.exists(file):
+            return True
+        else:
+            print("File:"+file+ "doesn't exists, restarting script...")
+            self.run()
+            return False
 
     def quit(self):
         self.Logging().info("Exiting script")
