@@ -1,9 +1,16 @@
 import os
 import User_Interface
 from tqdm import tqdm
+import pyewf
 
 def file_list(input):
     test = User_Interface.Main_program()
+    #Vraag om wat voor soort image het gaat
+    image_soort = int(input("Choose what kind of image is to be loaded."
+                        "1. .E01 image"
+                        "2. .dd image"))
+
+
     #Dictionary om alle files met hashes erbij op te slaan
     file_dict = {}
     # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
