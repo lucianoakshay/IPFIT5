@@ -12,15 +12,21 @@ class Main_program:
 
     p = None
     def __init__(self):
-        self.p = opdracht_IP.IP_filtering()
+        self.IP = opdracht_IP.IP_filtering()
         self.choices_main = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
                 "3": self.Gehakt_script,
                 "4": self.quit
                 }
+        self.choices_ip={
+                "1": self.input_pcap_file,
+                "2": self.back,
+                "3": self.quit
+        }
         self.e01=False
-
+    def back(self):
+        Main_program().run()
     # This is the logging function that will be used to log the activity of this script.
     def Logging(self):
         logger = logging.getLogger(__name__)
@@ -55,6 +61,13 @@ Menu
 4. Quit
 """)
 
+    def display_IP_menu(self):
+                        print("""
+Menu
+1. Input_file
+2. Go_back
+3. Quit
+""")
 
     # will run the main program
     def run(self):
@@ -72,10 +85,19 @@ Menu
 
     # will start the IP script
     def IP_script(self):
+        self.Logging().info("Starting IP_script")
         # import opdracht_IP
-        self.Logging().info("Starting IP_Script")
-        self.p.Filter_IP(self.input_pcap_file())
-        print("This is the IP_script that's now running")
+        while True:
+            self.display_IP_menu()
+            choice = input("Enter an option: ")
+            action = self.choices_ip.get(choice)
+            self.Logging().info("User input: %s",choice)
+            if action:
+                action()
+            else:
+                self.Logging().info("Invalid input, restarting script")
+                print("{0} is not a valid choice".format(choice))
+
 
     # Will start the foto script
     def Foto_script(self):
@@ -101,21 +123,44 @@ Menu
             return filename
 
 
+
     # asks for pcap file, this file will be used as input for the IP_script
     def input_pcap_file(self):
         file_list = []
-        amount = int(input('Input the ammount of .pcap files you want to filter'))
+        dictionary = {}
+        amount = int(input('Input the ammount of .pcap files you want to filter: '))
         for i in range(amount):
             test = input('Input pcap file: ')
             if self.exists(test):
                 print(self.bereken_hash(test))
                 file_list.append(os.path.abspath(test))
-        return file_list
+        print("Do you want to compare these files against an other file?(Y/N)")
+        while True:
+            compare = input()
+            if compare == "Y":
+                print("Please enter the file where you want to compare against:")
+                compare_file =input("")
+                if self.exists(compare_file):
+                    self.IP.set_compare(compare_file)
 
-    # will check if an file exists,
+                break
+            if compare =="N":
+                print("Will only filter out the IP adresses")
+                break
+            else:
+                print("That's not a valid input please enter either N or Y")
+
+        output =self.IP.Filter_IP(file_list)
+        dictionary.update(output)
+        # IP_script.write(dictionary)
+        output2=self.IP.compare(output)
+        self.IP.timeline(output2)
+
+    # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
     def exists(self,file):
 
         if os.path.exists(file):
+            print(self.bereken_hash(file))
             return True
         else:
             print("File:"+file+ "doesn't exists, restarting script...")
