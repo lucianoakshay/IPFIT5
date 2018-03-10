@@ -1,6 +1,7 @@
 import os
 import User_Interface
 from tqdm import tqdm
+import pyewf
 
 def file_list(input):
     test = User_Interface.Main_program()
