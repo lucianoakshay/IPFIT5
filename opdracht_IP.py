@@ -220,8 +220,9 @@ class IP_filtering:
                 if ip in temp_lijst:
                     # print(ip)
                     match_list.append(ip)
-        else:
-            print("file is empty")
+
+                else:
+                    print("file is empty")
         if match_list:
             print(match_list)
             print(self.bestanden)

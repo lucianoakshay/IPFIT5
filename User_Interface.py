@@ -151,6 +151,7 @@ Menu
                 print("That's not a valid input please enter either N or Y")
 
         output =self.IP.Filter_IP(file_list)
+        print(output)
         dictionary.update(output)
         # IP_script.write(dictionary)
         output2=self.IP.compare(output)
