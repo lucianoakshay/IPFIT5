@@ -119,7 +119,10 @@ class IP_filtering:
 
     def quit(self):
         sys.exit(0)
+    # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
 
+    def main(self):
+        print()
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -152,7 +155,7 @@ class IP_filtering:
         temp_ip=''
         self.bestanden=bestanden
         print(self.bestanden)
-
+        compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
             # hashes[bestand]=User_Interface.Main_program.bereken_hash(bestand)
 
@@ -162,11 +165,17 @@ class IP_filtering:
             pcap =open (os.path.join(sys.path[0], bestand),'rb')
             pcap = dpkt.pcap.Reader(pcap)
             for timestamp,buf in pcap:
-
+                if not isinstance(eth.data, dpkt.ip.IP):
+                   # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
+                   continue
 
                 eth = dpkt.ethernet.Ethernet(buf)
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6=eth.data
+                    for compare_ip in compare_bestand:
+                        if compare_ip == self.convert_IP(ipv6.src):
+                            match_list[os.path.join(sys.path[0],bestand)]=compare_ip
+
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
 
@@ -177,12 +186,10 @@ class IP_filtering:
 
                 ip=eth.data
 
-                if not isinstance(eth.data, dpkt.ip.IP):
-                   # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
-                   continue
+
                 IP_list[self.convert_IP(ip.src)]+=1
                 IP_list[self.convert_IP(ip.dst)]+=1
-        # print(IP_list)
+        print(match_list)
         return IP_list
     # will be used to convert an hex ip to an human readable format
     def convert_IP(self,ip_adress):
