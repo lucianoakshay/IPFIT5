@@ -17,7 +17,7 @@ from ipwhois import IPWhois
 import dpkt
 import pythonwhois
 import logging
-
+from dpkt.udp import UDP
 from tld import get_tld
 
 # else:
@@ -281,30 +281,49 @@ class IP_filtering:
             print(bestand)
             pcap =open (os.path.join(sys.path[0], bestand),'rb')
             pcap = dpkt.pcap.Reader(pcap)
-
+            # need to change the for loop because now it isn't sorted on IP-adress, but on date..
             for timestamp,buf in pcap:
                 eth = dpkt.ethernet.Ethernet(buf)
                 for ip in ip_list:
                     # tcp = ip.data
                     # print (ip)
-                    if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
-                        ipv6=eth.data
-                        if self.convert_IP(ipv6.src) == ip:
-                            print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                            print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
-                  (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst), ipv6.len, ipv6.ttl))
+                  #   if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
+                  #       ipv6=eth.data
+                  #       if self.convert_IP(ipv6.src) == ip:
+                  #           print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
+                  #           print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
+                  # (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst), ipv6.len, ipv6.ttl))
+                    if eth.type !=dpkt.ethernet.ETH_TYPE_IP:
+                        print("Not supported eth type")
+                        continue
 
-                    if eth.type ==dpkt.ethernet.ETH_TYPE_IP:
+                    else:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
                         if(self.convert_IP(ipv4.src)) == ip:
                             print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                             print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
                             (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
-                            if not isinstance(ipv4.data,dpkt.icmp.ICMP):
+                            if ipv4.p== dpkt.ip.IP_PROTO_UDP:
                                 udp =ipv4.data
-                                port = udp.sport
-                                print("port:"+ str(port))
+                                udp_source_port = udp.sport
+                                udp_destination_port = udp.dport
+                                print("Protocol: UDP\n"
+                                      "Source port: "+ str(udp_source_port)+ "\n"
+                                      "Destination port: "+ str(udp_destination_port))
+
+                            elif ipv4.p==dpkt.ip.IP_PROTO_TCP:
+                                tcp=ipv4.data
+                                tcp_source_port = tcp.sport
+                                tcp_destination_port = tcp.dport
+                                print("Protocol: TCP\n"
+                                      "Source port: "+ str(tcp_source_port)+ "\n"
+                                      "Destination port: "+ str(tcp_destination_port))
+
+                            elif ipv4.p == dpkt.ip.IP_PROTO_ICMP:
+                                print("Protocol: ICMP")
+                            else:
+                                print( ipv4.p)
 
 
 # test = IP_filtering()
