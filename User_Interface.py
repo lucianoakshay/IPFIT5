@@ -6,7 +6,8 @@ import hashlib as hash
 import logging
 import opdracht_IP
 import opdracht_Gehakt
-
+class NotPositiveError(UserWarning):
+ pass
 class Main_program:
     BUFFERSIZE =65536
 
@@ -128,12 +129,27 @@ Menu
     def input_pcap_file(self):
         file_list = []
         dictionary = {}
-        amount = int(input('Input the ammount of .pcap files you want to filter: '))
+        while True:
+            amount = input('Input the ammount of .pcap files you want to filter: ')
+            try:
+                amount = int(amount)
+                if amount<= 0 or amount>=11:
+                    raise NotPositiveError
+                break
+            except ValueError:
+                print("This is not a number please enter a valid number between 1 - 10")
+            except NotPositiveError:
+                print("Please enter a positive number, otherwise the whole application will cause total mayhem")
+
         for i in range(amount):
             test = input('Input pcap file: ')
             if self.exists(test):
                 print(self.bereken_hash(test))
                 file_list.append(os.path.abspath(test))
+            else:
+                print("File doesn't exist please enter a valid filename.")
+                continue
+
         print("Do you want to compare these files against an other file?(Y/N)")
         while True:
             compare = input()
@@ -142,6 +158,9 @@ Menu
                 compare_file =input("")
                 if self.exists(compare_file):
                     self.IP.set_compare(compare_file)
+                else:
+                    print("File doesn't exist.. Please enter a valid filename")
+                    continue
 
                 break
             if compare =="N":
@@ -165,7 +184,6 @@ Menu
             return True
         else:
             print("File:"+file+ "doesn't exists, restarting script...")
-            self.run()
             return False
     # will shutdown the script
     def quit(self):
