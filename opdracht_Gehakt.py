@@ -3,6 +3,9 @@ import User_Interface
 from tqdm import tqdm
 import subprocess
 
+# wat will je aan deze functie meegeven?
+# want je hebt de invoer van deze functie nu input genoemd, dit is ook een reserver word van python om user input te vragen.
+# Ik denk dat als je de invoer variabelen hernoemt naar filename of iets dergelijks dat je geen fouten meer krijgt.
 def image_mount(input):
     temporary_dir = input("Give a temporary mounting directory: ")
     #Checken of de directory bestaat. Indien dit niet het geval is wordt er gevraagd of deze aangemaakt moet worden.
