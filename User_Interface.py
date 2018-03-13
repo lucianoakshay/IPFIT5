@@ -25,12 +25,14 @@ class Main_program:
                 "2": self.back,
                 "3": self.quit
         }
-        self.e01=False
+
     def back(self):
         Main_program().run()
     # This is the logging function that will be used to log the activity of this script.
+
     def Logging(self):
         logger = logging.getLogger(__name__)
+
         if not len(logger.handlers):
             logger.setLevel(logging.INFO)
             handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
@@ -40,6 +42,7 @@ class Main_program:
             logger.addHandler(handler)
         return logger
     # this function will calculate the sha256 hash of a file
+# misschien ff testen of de hash klopt
     def bereken_hash(self,bestand):
         sha256hash = hash.sha3_256()
         if os.path.isfile(bestand) and os.access(bestand, os.R_OK):
@@ -49,7 +52,7 @@ class Main_program:
                     sha256hash.update(file_buffer)
                     file_buffer= file.read(self.BUFFERSIZE)
         else:
-            self.Logging(bestand+": File does not exist or is not accessible")
+            self.Logging().info(bestand+": File does not exist or is not accessible")
 
         return(sha256hash.hexdigest())
     # function that will print out the menu to the screen, ( needs some minor changes)
@@ -102,13 +105,11 @@ Menu
 
     # Will start the foto script
     def Foto_script(self):
-        self.e01=True
         self.Logging().info("Starting Foto_Script")
 
         print("This is the Foto_script that's now running")
     # WIll start gehakt script
     def Gehakt_script(self):
-        self.e01=True
         self.Logging().info("Starting Gehakt_Script")
         opdracht_Gehakt.file_list(input("Input the master directory: "))
         print("This is the Gehakt_script that's now running")
@@ -144,7 +145,6 @@ Menu
         for i in range(amount):
             test = input('Input pcap file: ')
             if self.exists(test):
-                print(self.bereken_hash(test))
                 file_list.append(os.path.abspath(test))
             else:
                 print("File doesn't exist please enter a valid filename.")
@@ -157,7 +157,8 @@ Menu
                 print("Please enter the file where you want to compare against:")
                 compare_file =input("")
                 if self.exists(compare_file):
-                    self.IP.set_compare(compare_file)
+                    self.Logging().info("Opening file: "+ compare_file)
+
                 else:
                     print("File doesn't exist.. Please enter a valid filename")
                     continue
@@ -168,13 +169,13 @@ Menu
                 break
             else:
                 print("That's not a valid input please enter either N or Y")
-
+        # self.IP.main()
         output =self.IP.Filter_IP(file_list)
         print(output)
-        dictionary.update(output)
-        # IP_script.write(dictionary)
-        output2=self.IP.compare(output)
-        self.IP.timeline(output2)
+        # dictionary.update(output)
+        # # IP_script.write(dictionary)
+        # output2=self.IP.compare(output)
+        # self.IP.timeline(output2)
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
     def exists(self,file):
