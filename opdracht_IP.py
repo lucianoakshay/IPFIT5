@@ -106,6 +106,10 @@ class IP_filtering:
     def __init__(self):
         self.compare_input= None
         self.bestanden = None
+        self.IP_list = None
+        # self.user = User_Interface.Main_program()
+        # self.Logger = User_Interface.Main_program().Logging()
+
         print()
         # self.choices = {
         #         "1": self.file_input,
@@ -121,8 +125,17 @@ class IP_filtering:
         sys.exit(0)
     # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
 
-    def main(self):
-        print()
+    def main(self,bestanden,compare_file):
+        self.bestanden = bestanden
+        self.compare_input = compare_file
+        output =self.Filter_IP(bestanden)
+        if output:
+            self.compare(output)
+
+
+
+
+
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -148,6 +161,7 @@ class IP_filtering:
 
     # class that will filter the IP adresses that resides in an pcap file
     def Filter_IP (self, bestanden):
+        User_Interface.Main_program().Logging().info("testing")
         IP_list=Counter()
         temp_list =[]
         match_list ={}
@@ -162,14 +176,15 @@ class IP_filtering:
             # for bestand in bestanden:
             # Notice in the final program os.path.join sys.path needs to be removed.
             # Because bestand will be converted to absolute paths.
-            pcap =open (os.path.join(sys.path[0], bestand),'rb')
+            pcap =open (bestand,'rb')
             pcap = dpkt.pcap.Reader(pcap)
             for timestamp,buf in pcap:
+                eth = dpkt.ethernet.Ethernet(buf)
                 if not isinstance(eth.data, dpkt.ip.IP):
                    # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
                    continue
 
-                eth = dpkt.ethernet.Ethernet(buf)
+
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6=eth.data
                     for compare_ip in compare_bestand:
@@ -182,14 +197,10 @@ class IP_filtering:
 
                     # print(self.convert_IP(ipv6.src))
                     # print(self.convert_IP(ipv6.dst))
-
-
                 ip=eth.data
-
-
                 IP_list[self.convert_IP(ip.src)]+=1
                 IP_list[self.convert_IP(ip.dst)]+=1
-        print(match_list)
+
         return IP_list
     # will be used to convert an hex ip to an human readable format
     def convert_IP(self,ip_adress):
