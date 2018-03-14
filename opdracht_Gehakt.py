@@ -7,7 +7,10 @@ class gehakt:
 
     def main_def(self, input):
         # Image mount wordt aangeroepen om de meegegeven image te mounten
-        sec_input = self.image_mount(input)
+        mounting_dir = self.image_mount(input)
+
+        # File list wordt aangeroepen om een dictionary te maken van alle files op de image
+        file_dict = self.file_list(mounting_dir)
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -27,17 +30,16 @@ class gehakt:
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
 
-    def file_list(self, sec_input):
-        #test = User_Interface.Main_program()
+    def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
         file_dict = {}
         # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
         # Vervolgens worden de subdir en de file gejoind in de variabele current_dir
         # Hierna wordt een betreffende directory meegegeven aan een splitext commando die de extensie van de file afhaald
-        for subdir, dirs, files in tqdm(os.walk(sec_input)):
+        for subdir, dirs, files in tqdm(os.walk(mounting_dir)):
             for file in files:
                 current_dir = (os.path.join(subdir, file))
-                hash_waarde = User_Interface.Main_program.bereken_hash(current_dir)
+                hash_waarde = User_Interface.Main_program.bereken_hash(User_Interface.Main_program(), current_dir)
                 filename, file_extension = os.path.splitext(current_dir)
                 file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
         print(file_dict)
