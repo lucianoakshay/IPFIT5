@@ -111,7 +111,7 @@ Menu
     # WIll start gehakt script
     def Gehakt_script(self):
         self.Logging().info("Starting Gehakt_Script")
-        opdracht_Gehakt.file_list(input("Input the master directory: "))
+        opdracht_Gehakt.gehakt.file_list(input("Input the location of the image (.dd / .e01(not yet implemented)): "))
         print("This is the Gehakt_script that's now running")
 
 
