@@ -6,6 +6,7 @@ import hashlib as hash
 import logging
 import opdracht_IP
 import opdracht_Gehakt
+from datetime import date
 class NotPositiveError(UserWarning):
  pass
 class Main_program:
@@ -14,6 +15,7 @@ class Main_program:
     p = None
     def __init__(self):
         self.IP = opdracht_IP.IP_filtering()
+        self.compare_file= None
         self.choices_main = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
@@ -144,24 +146,30 @@ Menu
 
         for i in range(amount):
             test = input('Input pcap file: ')
-            if self.exists(test):
-                file_list.append(os.path.abspath(test))
-            else:
-                print("File doesn't exist please enter a valid filename.")
-                continue
+            while not self.exists(test):
+                test = input('Input pcap file: ')
+                if self.exists(test):
+                    file_list.append(os.path.abspath(test))
+                    break
+                else:
+                    print("File doesn't exist please enter a valid filename.")
+
 
         print("Do you want to compare these files against an other file?(Y/N)")
         while True:
             compare = input()
             if compare == "Y":
                 print("Please enter the file where you want to compare against:")
-                compare_file =input("")
-                if self.exists(compare_file):
-                    self.Logging().info("Opening file: "+ compare_file)
-
-                else:
-                    print("File doesn't exist.. Please enter a valid filename")
-                    continue
+                while True:
+                    compare_file =input("")
+                    if self.exists(compare_file):
+                        self.Logging().info("Opening file: "+ compare_file)
+                        print(compare_file)
+                        self.compare_file = compare_file
+                        print(self.compare_file)
+                        break
+                    else:
+                        print("File doesn't exist.. Please enter a valid filename")
 
                 break
             if compare =="N":
@@ -170,8 +178,9 @@ Menu
             else:
                 print("That's not a valid input please enter either N or Y")
         # self.IP.main()
-        output =self.IP.Filter_IP(file_list)
-        print(output)
+        self.IP.main(file_list,self.compare_file)
+        # output =self.IP.Filter_IP(file_list)
+        # print(output)
         # dictionary.update(output)
         # # IP_script.write(dictionary)
         # output2=self.IP.compare(output)
@@ -181,17 +190,19 @@ Menu
     def exists(self,file):
 
         if os.path.exists(file):
-            print(self.bereken_hash(file))
+            with open("Hashes"+str(date.today())+ ".txt", 'a+') as f:
+                f.write(file+ ':'+self.bereken_hash(file))
+            (self.bereken_hash(file))
             return True
         else:
             print("File:"+file+ "doesn't exists, restarting script...")
             return False
+
     # will shutdown the script
     def quit(self):
         self.Logging().info("Exiting script")
         print("Exiting script the log files are written to: ")
         sys.exit(0)
-
 
 #this function will run the main function when script is called
 if __name__ == "__main__":
