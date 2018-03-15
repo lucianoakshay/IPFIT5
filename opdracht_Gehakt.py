@@ -36,6 +36,7 @@ class gehakt:
 
         # File counter die aan het begin alle files telt voor de progress bar
         filecounter = 0
+        hash_waarde = 0 # Temporary measure until hash function has been fixed
         for filepath in os.walk(mounting_dir):
             filecounter += 1
 
@@ -45,7 +46,7 @@ class gehakt:
         for subdir, dirs, files in tqdm(os.walk(mounting_dir), total=filecounter, unit="files"):
             for file in files:
                 current_dir = (os.path.join(subdir, file))
-                hash_waarde = User_Interface.Main_program.bereken_hash(User_Interface.Main_program(), current_dir)
+                #hash_waarde = User_Interface.Main_program.bereken_hash(User_Interface.Main_program(), current_dir)
                 filename, file_extension = os.path.splitext(current_dir)
                 file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
         print(file_dict)
