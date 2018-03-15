@@ -16,7 +16,7 @@ class gehakt:
     #E01 is not implemented yet
     def image_mount(self, given_dir):
         temporary_dir = input("Give a temporary mounting directory: ")
-        User_Interface.Main_program.Logging().info("User defined mounting directory: " + temporary_dir)
+        User_Interface.Main_program.Logging(User_Interface.Main_program()).info("User defined mounting directory: " + temporary_dir)
         # Checken of de directory bestaat. Indien dit niet het geval is wordt er gevraagd of deze aangemaakt moet worden.
         while os.path.isdir(temporary_dir) == False:
             create_dir = input("Directory does not exist. Do you want it to be created? Yes/No ")
