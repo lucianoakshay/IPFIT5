@@ -16,9 +16,11 @@ import dns.resolver
 from ipwhois import IPWhois
 import dpkt
 import pythonwhois
+from ipwhois.exceptions import IPDefinedError
 import logging
 from dpkt.udp import UDP
 from tld import get_tld
+from tld.exceptions import TldDomainNotFound
 
 # else:
 #     raise ImportError('error')
@@ -101,14 +103,16 @@ class IP_filtering:
             'TA',
             'DLV',
         ]
-
+    #Log = User_Interface.Main_program().Logging()
 
     def __init__(self):
+        self.Log = None
         self.compare_input= None
         self.bestanden = None
         self.IP_list = None
         # self.user = User_Interface.Main_program()
         # self.Logger = User_Interface.Main_program().Logging()
+
 
         print()
         # self.choices = {
@@ -126,16 +130,22 @@ class IP_filtering:
     # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
 
     def main(self,bestanden,compare_file):
+        self.Log = User_Interface.Main_program().Logging()
+
         self.bestanden = bestanden
+        print( bestanden)
         self.compare_input = compare_file
+        print(self.compare_input)
         output =self.Filter_IP(bestanden)
-        if output:
-            self.compare(output)
-
-
-
-
-
+        print(output)
+        if output and self.compare_input is not None:
+            compare_output =self.Compare(output,self.compare_input)
+            if compare_output:
+                self.WHOIS(compare_output)
+            else:
+                print ("Not available")
+        else:
+            print("No input given")
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -161,7 +171,7 @@ class IP_filtering:
 
     # class that will filter the IP adresses that resides in an pcap file
     def Filter_IP (self, bestanden):
-        User_Interface.Main_program().Logging().info("testing")
+
         IP_list=Counter()
         temp_list =[]
         match_list ={}
@@ -169,7 +179,7 @@ class IP_filtering:
         temp_ip=''
         self.bestanden=bestanden
         print(self.bestanden)
-        compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
+        # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
             # hashes[bestand]=User_Interface.Main_program.bereken_hash(bestand)
 
@@ -187,9 +197,9 @@ class IP_filtering:
 
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6=eth.data
-                    for compare_ip in compare_bestand:
-                        if compare_ip == self.convert_IP(ipv6.src):
-                            match_list[os.path.join(sys.path[0],bestand)]=compare_ip
+                    # for compare_ip in compare_bestand:
+                    #     if compare_ip == self.convert_IP(ipv6.src):
+                    #         match_list[os.path.join(sys.path[0],bestand)]=compare_ip
 
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
@@ -221,13 +231,13 @@ class IP_filtering:
             file.flush()
         file.close()
     # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
-    def compare(self, IPlijst):
-        print(self.compare_input)
+    def Compare(self, IPlijst,compare_input):
+        print(compare_input)
         temp_lijst = []
         match_list=[]
         # print(list(IPlijst.keys())[0])
 
-        bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
+        bestand = open(os.path.join(sys.path[0],compare_input),'r')
         for rij in bestand:
             print(rij)
             rij = rij.strip('\n')
@@ -239,8 +249,8 @@ class IP_filtering:
                     # print(ip)
                     match_list.append(ip)
 
-                else:
-                    print("file is empty")
+        else:
+            print("file is empty")
         if match_list:
             print(match_list)
             print(self.bestanden)
@@ -263,21 +273,32 @@ class IP_filtering:
         for ip in match_list:
             indicator = {}
 
-            with open(os.path.join(sys.path[0], 'output2.json'), 'at') as file:
-                obj = IPWhois(ip)
+            with open(os.path.join(sys.path[0], 'output3.json'), 'at') as file:
+                try:
+                    obj = IPWhois(ip)
+                except IPDefinedError as e:
+                    print(e)
+                    continue
                 results = obj.lookup_rdap(depth=1)
                 print(results)
                 indicator['Queried_IP:'] = ip
-                indicator['Queried_domain'] = socket.getfqdn(ip)
+                try:
+                    indicator['Queried_domain'] = socket.getfqdn(ip)
+                    dict =(pythonwhois.get_whois(get_tld('http://'+socket.getfqdn(ip))))
+                except TldDomainNotFound as e:
+                    print(e)
+                    continue
+
 
                 #nog opzoek naar een betere whois, kan raw evt weglaten.
-                dict =(pythonwhois.get_whois(get_tld('http://'+socket.getfqdn(ip))))
+
                 del dict["raw"]
                 print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
-                # print (dict)
+                print (dict)
                 indicator.update(dict)
+                print(indicator)
                 # string = string.strip('['+']'+"\\n")
-                file.write(json.dumps(indicator,default=self.json_time_converter))
+                file.write(json.dumps(indicator,default=self.json_time_converter()))
     # function to preform a dig on a domain
     def dig(self, domain):
 
