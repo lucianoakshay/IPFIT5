@@ -7,12 +7,16 @@ import logging
 import opdracht_IP
 import opdracht_Gehakt
 from datetime import date
-class NotPositiveError(UserWarning):
- pass
-class Main_program:
-    BUFFERSIZE =65536
 
+
+class NotPositiveError(UserWarning):
+    pass
+
+
+class Main_program:
+    BUFFERSIZE = 65536
     p = None
+
     def __init__(self):
         self.sha256hash = hash.sha256()
 
@@ -24,7 +28,7 @@ class Main_program:
                 "3": self.Gehakt_script,
                 "4": self.quit
                 }
-        self.choices_ip={
+        self.choices_ip = {
                 "1": self.input_pcap_file,
                 "2": self.back,
                 "3": self.quit
@@ -47,6 +51,7 @@ class Main_program:
         return logger
     # this function will calculate the sha256 hash of a file
 # misschien ff testen of de hash klopt
+
     def bereken_hash(self,bestand):
         if os.path.isfile(bestand) and os.access(bestand, os.R_OK):
             with open((bestand),'rb') as file:
@@ -107,11 +112,13 @@ Menu
 
 
     # Will start the foto script
+
     def Foto_script(self):
         self.Logging().info("Starting Foto_Script")
 
         print("This is the Foto_script that's now running")
     # WIll start gehakt script
+
     def Gehakt_script(self):
         self.Logging().info("Starting Gehakt_Script")
         opdracht_Gehakt.gehakt.main_def(opdracht_Gehakt.gehakt(), input("Input the location of the image (.dd / .e01(not yet implemented)): "))
@@ -154,7 +161,6 @@ Menu
                 else:
                     print("File doesn't exist please enter a valid filename.")
 
-
         print("Do you want to compare these files against an other file?(Y/N)")
         while True:
             compare = input()
@@ -172,7 +178,7 @@ Menu
                         print("File doesn't exist.. Please enter a valid filename")
 
                 break
-            if compare =="N":
+            if compare == "N":
                 print("Will only filter out the IP adresses")
                 break
             else:
