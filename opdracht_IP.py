@@ -5,7 +5,7 @@
 import sys
 # if (sys.version_info < (3, 0)):
 #    raise Exception('script should not be run with python2.x')
-
+import ipaddress
 import datetime
 # from time import gmtime,strftime
 from datetime import date
@@ -130,18 +130,17 @@ class IP_filtering:
     # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
 
     def main(self,bestanden,compare_file):
-        self.Log = User_Interface.Main_program().Logging()
 
+        self.Log = User_Interface.Main_program().Logging()
         self.bestanden = bestanden
-        print( bestanden)
         self.compare_input = compare_file
-        print(self.compare_input)
         output =self.Filter_IP(bestanden)
         print(output)
         if output and self.compare_input is not None:
             compare_output =self.Compare(output,self.compare_input)
             if compare_output:
                 self.WHOIS(compare_output)
+                self.timeline(compare_output)
             else:
                 print ("Not available")
         else:
@@ -266,7 +265,7 @@ class IP_filtering:
         if isinstance(timestamp, datetime.datetime):
             return timestamp.__str__()
 
-    # function to get the whois information about an
+    # function to get the whois information about an IP
     def WHOIS(self,match_list):
         print (match_list)
 
@@ -274,31 +273,33 @@ class IP_filtering:
             indicator = {}
 
             with open(os.path.join(sys.path[0], 'output3.json'), 'at') as file:
-                try:
-                    obj = IPWhois(ip)
-                except IPDefinedError as e:
-                    print(e)
-                    continue
-                results = obj.lookup_rdap(depth=1)
-                print(results)
                 indicator['Queried_IP:'] = ip
-                try:
-                    indicator['Queried_domain'] = socket.getfqdn(ip)
-                    dict =(pythonwhois.get_whois(get_tld('http://'+socket.getfqdn(ip))))
-                except TldDomainNotFound as e:
-                    print(e)
-                    continue
+                # check if IP is private address.
+                if ipaddress.ip_address(ip).is_private:
+                    indicator['Queried_domain'] = "Private address space"
+                else:
+                    obj = IPWhois(ip)
+                    results = obj.lookup_rdap(depth=1)
+                    print(results)
+
+                    try:
+                        indicator['Queried_domain'] = socket.getfqdn(ip)
+                        tld= get_tld('http://'+socket.getfqdn(ip))
+                        dict =(pythonwhois.get_whois(tld))
+                    except TldDomainNotFound as e:
+                        print(e)
+                        continue
 
 
                 #nog opzoek naar een betere whois, kan raw evt weglaten.
 
-                del dict["raw"]
-                print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
+                    del dict["raw"]
+                    print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
                 print (dict)
                 indicator.update(dict)
                 print(indicator)
                 # string = string.strip('['+']'+"\\n")
-                file.write(json.dumps(indicator,default=self.json_time_converter()))
+                file.write(json.dumps(indicator,default=self.json_time_converter))
     # function to preform a dig on a domain
     def dig(self, domain):
 
@@ -332,10 +333,22 @@ class IP_filtering:
                   #           print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                   #           print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
                   # (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst), ipv6.len, ipv6.ttl))
-                    if eth.type !=dpkt.ethernet.ETH_TYPE_IP:
+                  # will now print ipv6 address, still need to implement that the function will print source and destination port.
+
+                    if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
+                        ipv6 = eth.data
+                        fh = dpkt.ip.IP_PROTO_FRAGMENT
+                        ic = dpkt.ip.IP_PROTO_ICMP6
+                        icmpv6 = ipv6.data
+
+
+                        # get src and dst ip address
+                        # src_ip = socket.inet_ntop( ipv6.src)
+                        # dst_ip = socket.inet_ntop(ipv6.dst)
+                        print(self.convert_IP(ipv6.src))
+                    elif eth.type !=dpkt.ethernet.ETH_TYPE_IP:
                         print("Not supported eth type")
                         continue
-
                     else:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
