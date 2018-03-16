@@ -16,7 +16,7 @@ class gehakt:
     #E01 is not implemented yet
     def image_mount(self, given_dir):
         temporary_dir = input("Give a temporary mounting directory: ")
-        User_Interface.Main_program.Logging().info("User defined mounting directory: " + temporary_dir)
+        User_Interface.Main_program.Logging(User_Interface.Main_program()).info("User defined mounting directory: " + temporary_dir)
         # Checken of de directory bestaat. Indien dit niet het geval is wordt er gevraagd of deze aangemaakt moet worden.
         while os.path.isdir(temporary_dir) == False:
             create_dir = input("Directory does not exist. Do you want it to be created? Yes/No ")
@@ -33,13 +33,20 @@ class gehakt:
     def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
         file_dict = {}
+
+        # File counter die aan het begin alle files telt voor de progress bar
+        filecounter = 0
+        hash_waarde = 0 # Temporary measure until hash function has been fixed
+        for filepath in os.walk(mounting_dir):
+            filecounter += 1
+
         # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
         # Vervolgens worden de subdir en de file gejoind in de variabele current_dir
         # Hierna wordt een betreffende directory meegegeven aan een splitext commando die de extensie van de file afhaald
-        for subdir, dirs, files in tqdm(os.walk(mounting_dir)):
+        for subdir, dirs, files in tqdm(os.walk(mounting_dir), total=filecounter, unit="files"):
             for file in files:
                 current_dir = (os.path.join(subdir, file))
-                hash_waarde = User_Interface.Main_program.bereken_hash(User_Interface.Main_program(), current_dir)
+                #hash_waarde = User_Interface.Main_program.bereken_hash(User_Interface.Main_program(), current_dir)
                 filename, file_extension = os.path.splitext(current_dir)
                 file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
         print(file_dict)
