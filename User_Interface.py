@@ -14,7 +14,7 @@ class Main_program:
 
     p = None
     def __init__(self):
-        self.sha256hash = hash.sha3_256()
+        self.sha256hash = hash.sha256()
 
         self.IP = opdracht_IP.IP_filtering()
         self.compare_file= None
