@@ -145,8 +145,7 @@ Menu
                 print("Please enter a positive number, otherwise the whole application will cause total mayhem")
 
         for i in range(amount):
-            test = input('Input pcap file: ')
-            while not self.exists(test):
+            while True:
                 test = input('Input pcap file: ')
                 if self.exists(test):
                     file_list.append(os.path.abspath(test))
