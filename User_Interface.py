@@ -55,8 +55,7 @@ class Main_program:
                     self.sha256hash.update(file_buffer)
                     file_buffer= file.read(self.BUFFERSIZE)
         else:
-            # self.Logging().info(bestand+": File does not exist or is not accessible")
-            print("file doesn't exist")
+            self.Logging().info(bestand+": File does not exist or is not accessible")
 
         return(str(self.sha256hash.hexdigest()))
     # function that will print out the menu to the screen, ( needs some minor changes)
