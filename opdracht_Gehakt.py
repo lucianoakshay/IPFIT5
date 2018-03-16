@@ -36,8 +36,9 @@ class gehakt:
 
         # File counter die aan het begin alle files telt voor de progress bar
         filecounter = 0
-        for filepath in os.walk(mounting_dir):
-            filecounter += 1
+        for subdir, dirs, files in os.walk(mounting_dir):
+            for file in files:
+                filecounter += 1
 
         # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
         # Vervolgens worden de subdir en de file gejoind in de variabele current_dir
