@@ -114,7 +114,7 @@ class IP_filtering:
         # self.Logger = User_Interface.Main_program().Logging()
 
 
-        
+
         # self.choices = {
         #         "1": self.file_input,
         #         "2": self.back,
