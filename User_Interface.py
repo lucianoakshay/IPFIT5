@@ -14,6 +14,8 @@ class Main_program:
 
     p = None
     def __init__(self):
+        self.sha256hash = hash.sha3_256()
+
         self.IP = opdracht_IP.IP_filtering()
         self.compare_file= None
         self.choices_main = {
@@ -46,17 +48,17 @@ class Main_program:
     # this function will calculate the sha256 hash of a file
 # misschien ff testen of de hash klopt
     def bereken_hash(self,bestand):
-        sha256hash = hash.sha3_256()
         if os.path.isfile(bestand) and os.access(bestand, os.R_OK):
             with open((bestand),'rb') as file:
                 file_buffer = file.read(self.BUFFERSIZE)
                 while len(file_buffer)>0:
-                    sha256hash.update(file_buffer)
+                    self.sha256hash.update(file_buffer)
                     file_buffer= file.read(self.BUFFERSIZE)
         else:
-            self.Logging().info(bestand+": File does not exist or is not accessible")
+            # self.Logging().info(bestand+": File does not exist or is not accessible")
+            print("file doesn't exist")
 
-        return(sha256hash.hexdigest())
+        return(str(self.sha256hash.hexdigest()))
     # function that will print out the menu to the screen, ( needs some minor changes)
     def display_main_menu(self):
         print("""
