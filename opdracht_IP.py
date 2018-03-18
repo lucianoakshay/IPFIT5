@@ -104,6 +104,8 @@ class IP_filtering:
         self.compare_input= None
         self.bestanden = None
         self.IP_list = None
+
+        self.ip_filename=os.path.join(sys.path[0],"IP_address_"+str(date.today())+".txt")
         self.protocol_list = {
             20: 'FTP',
             21: 'FTP',
@@ -143,11 +145,12 @@ class IP_filtering:
 
         self.Log = User_Interface.Main_program().Logging()
         self.bestanden = bestanden
+
         self.compare_input = compare_file
         self.Log.info("Filtering files" + str(bestanden))
         output =self.Filter_IP(bestanden)
         if output and self.compare_input is not None:
-            self.write(output)
+            self.write_IP(output,self.ip_filename)
             compare_output =self.Compare(output,self.compare_input)
             if compare_output:
                 self.WHOIS(compare_output)
@@ -155,9 +158,11 @@ class IP_filtering:
             else:
                 self.Log.info ("No similarities found in: " + compare_file)
                 print("No similarties found")
+        elif output and self.compare_input is None:
+            self.Log.info("Will only filter For IP-addresses and will not compare")
+            print("Only filtering for IP-adress")
         else:
-            self.Log.error("No IP-adresses could be filtered out")
-            print("No IP addresses could be found")
+            print("No IP addresses could be found in the files:" +str(bestanden))
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -177,11 +182,7 @@ class IP_filtering:
         print(self.bestanden)
         # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
-            # hashes[bestand]=User_Interface.Main_program.bereken_hash(bestand)
 
-            # for bestand in bestanden:
-            # Notice in the final program os.path.join sys.path needs to be removed.
-            # Because bestand will be converted to absolute paths.
             pcap =open (bestand,'rb')
             pcap = dpkt.pcap.Reader(pcap)
             for timestamp,buf in pcap:
@@ -220,9 +221,10 @@ class IP_filtering:
             return socket.inet_ntop(socket.AF_INET6, ip_adress)
 
     #  will be used to write out the list of IP-adreses
-    def write (self,input):
-        with open(os.path.join(sys.path[0], 'IP-adresses_'+str(date.today())+'.txt'),'w+') as file:
-            # file.write(filename + ':')strftime("%Y-%m-%d %H:%M", gmtime()))
+    def write_IP (self,input, filename):
+        self.Log.info("Writing IP_addresses to file:" + self.ip_filename)
+
+        with open(filename,'w+') as file:
             file.write('IP-address      count' +'\n')
             for ip, waarde in input.items():
                 print(ip)
@@ -232,37 +234,35 @@ class IP_filtering:
         file.close()
     # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
     def Compare(self, IPlijst,compare_input):
-        print(compare_input)
         temp_lijst = []
         match_list=[]
         # print(list(IPlijst.keys())[0])
-
+        self.Log.info("Reading the IP-list file: " + str(os.path.join(sys.path[0],compare_input)))
         bestand = open(os.path.join(sys.path[0],compare_input),'r')
         for rij in bestand:
-            print(rij)
             rij = rij.strip('\n')
             try:
                 ipaddress.ip_address(rij)
                 temp_lijst.append(rij)
             except ValueError:
+                self.Log.error("File seem to contain none valid IP-address")
+                self.Log.error("IP-address:" +str(rij) +" Will not be used to compare")
                 print("File seem to contain none valid IP-address")
-                print ("IP-address:" +str(rij) +"Will not be used to compare ")
-                temp_lijst.pop()
+                print ("IP-address:" +str(rij) +" Will not be used to compare")
+                print (temp_lijst)
                 continue
 
-        if temp_lijst:
-            for ip in list(IPlijst.keys()):
-                # print(ip)
-                if ip in temp_lijst:
-                    # print(ip)
-                    match_list.append(ip)
 
-        else:
-            print("File: ")
+        for ip in list(IPlijst.keys()):
+            # print(ip)
+            if ip in temp_lijst:
+                # print(ip)
+                match_list.append(ip)
+
         if match_list:
             return match_list
         else:
-            print("no match")
+            self.Log.info("No matches found")
         bestand.close()
         # else:
         #     User_Interface.Main_program().run()
@@ -347,24 +347,30 @@ class IP_filtering:
 
                     if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                         ipv6 = eth.data
-                        print(ip)
                         if(self.convert_IP(ipv6.src)) == ip or self.convert_IP(ipv6.dst)==ip:
-
-                            fh = dpkt.ip.IP_PROTO_FRAGMENT
-                            ic = dpkt.ip.IP_PROTO_ICMP6
-                            icmpv6 = ipv6.data
-
-
                             # get src and dst ip address
                             # src_ip = socket.inet_ntop( ipv6.src)
                             # dst_ip = socket.inet_ntop(ipv6.dst)
-                            print(self.convert_IP(ipv6.src))
-                            tcp=ipv6.data
-                            print (tcp.sport)
                             print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                             print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)), eth.type)
                             print( 'IP: %s -> %s   \n' % \
                                 (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst)))
+                            if ipv6.p== dpkt.ip.IP_PROTO_UDP :
+                                udp =ipv6.data
+                                udp_source_port = udp.sport
+                                udp_destination_port = udp.dport
+                                print("Protocol: UDP\n"
+                                      "Source port: "+ str(udp_source_port)+ "\n"
+                                      "Destination port: "+ str(udp_destination_port) +  '\n')
+                            elif ipv6.p == dpkt.ip.IP_PROTO_TCP:
+                                tcp = ipv6.data
+                                tcp_source_port = tcp.sport
+                                tcp_destination_port = tcp.dport
+
+                                print ("Protocol: TCP\n"
+                                       "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
+                                       "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
+
                     elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
