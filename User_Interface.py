@@ -7,8 +7,9 @@ import logging
 import opdracht_IP
 import opdracht_Gehakt
 from datetime import date
-
-
+from urllib.request import urlopen
+from urllib.error import URLError
+from virus_total_apis import PublicApi as virustotal
 class NotPositiveError(UserWarning):
     pass
 
@@ -16,6 +17,7 @@ class NotPositiveError(UserWarning):
 class Main_program:
     BUFFERSIZE = 65536
     p = None
+    API_KEY = '5d26b492516bef5706b162488776b1ac507accd713f2d9a7bd53727b46ecf20e'
 
     def __init__(self):
         self.sha256hash = hash.sha256()
@@ -37,6 +39,21 @@ class Main_program:
                 "2": self.back,
                 "3": self.quit
         }
+        if not self.internet_on():
+            self.Logging().warning("No internet access, virus scaning is disabled. Also reduced functionality of the IP script")
+            print("#"*48)
+            print("# No internet access, virusscanner is disabled #")
+            print("# IP_script will not be able to get WHOIS info #")
+            print("#"*48)
+
+
+
+    def internet_on(self):
+        try:
+            urlopen('http://google.com', timeout=2)
+            return True
+        except URLError as err:
+            return False
 
     def back(self):
         Main_program().run()
@@ -131,11 +148,11 @@ Menu
 
     # will be used in the future to ask for input of the e01 file
     def input_e01_file(self):
-
+        naam= "test"
         print("Please enter the filename of the e01:")
         filename =input()
 
-        if self.exists(filename):
+        if self.exists(filename,naam):
             return filename
 
 
@@ -229,7 +246,7 @@ Menu
     # will shutdown the script
     def quit(self):
         self.Logging().info("Exiting script")
-        print("Exiting script the log files are written to: " + str(self.log_location) )
+        print("Exiting script the log files are written to: " + self.log_location )
         sys.exit(0)
 
 #this function will run the main function when script is called
