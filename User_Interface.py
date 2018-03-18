@@ -231,6 +231,8 @@ Menu
         # # IP_script.write(dictionary)
         # output2=self.IP.compare(output)
         # self.IP.timeline(output2)
+    def virustotal_scanner(self, file_hash):
+        print("Uploading hash to virustotal")
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
     def exists(self,file,naam):
