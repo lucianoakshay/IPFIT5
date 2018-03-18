@@ -19,8 +19,12 @@ class Main_program:
 
     def __init__(self):
         self.sha256hash = hash.sha256()
-        self.log_location = os.path.join(sys.path[0],'Main.log')
+
         self.IP = opdracht_IP.IP_filtering()
+        temp_path =os.path.join(sys.path[0],"log")
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
+        self.log_location = os.path.join(sys.path[0],'log','Main.log')
         self.compare_file= None
         self.choices_main = {
                 "1": self.IP_script,
@@ -194,12 +198,14 @@ Menu
                 break
             if compare == "N":
                 print("Will only filter out the IP adresses")
+                self.compare_file = None
                 break
             if compare == "C":
                 print("Cancel. Restarting script")
                 self.run()
             else:
                 print("That's not a valid input please enter either N/Y or C to cancel")
+
         # self.IP.main()
         self.IP.main(file_list,self.compare_file)
         # output =self.IP.Filter_IP(file_list)
