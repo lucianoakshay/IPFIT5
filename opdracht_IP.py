@@ -104,8 +104,9 @@ class IP_filtering:
         self.compare_input= None
         self.bestanden = None
         self.IP_list = None
-
+        self.whois_filename=os.path.join(sys.path[0], 'Whois_info_' + str(date.today())+ ".csv")
         self.ip_filename=os.path.join(sys.path[0],"IP_address_"+str(date.today())+".txt")
+        self.similarties_filename= os.path.join(sys.path[0], "Similarities_"+ str(date.today())+ ".txt")
         self.protocol_list = {
             20: 'FTP',
             21: 'FTP',
@@ -155,9 +156,13 @@ class IP_filtering:
             if compare_output:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
+
+                print("The following files has been created:" + self.ip_filename + "\n"+ self.whois_filename)
             else:
                 self.Log.info ("No similarities found in: " + compare_file)
                 print("No similarties found")
+
+                print("The following files has been created:" + self.ip_filename + self.whois_filename)
         elif output and self.compare_input is None:
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtering for IP-adress")
@@ -232,13 +237,14 @@ class IP_filtering:
                 file.write( '{0:<16} {1:>8}'.format(ip,str(waarde))+'\n')
             file.flush()
         file.close()
+
     # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
     def Compare(self, IPlijst,compare_input):
         temp_lijst = []
         match_list=[]
         # print(list(IPlijst.keys())[0])
-        self.Log.info("Reading the IP-list file: " + str(os.path.join(sys.path[0],compare_input)))
-        bestand = open(os.path.join(sys.path[0],compare_input),'r')
+        self.Log.info("Reading the IP-list file: " + str(os.path.abspath(compare_input)))
+        bestand = open(os.path.abspath(compare_input),'r')
         for rij in bestand:
             rij = rij.strip('\n')
             try:
@@ -260,12 +266,24 @@ class IP_filtering:
                 match_list.append(ip)
 
         if match_list:
+            print("The following similarties have been found:")
+            for ip in match_list:
+                print(ip)
+            self.write_compare(match_list)
+            print("Will be written to: "+ self.similarties_filename)
             return match_list
+
         else:
             self.Log.info("No matches found")
         bestand.close()
         # else:
         #     User_Interface.Main_program().run()
+    def write_compare(self,similarties):
+        with open(self.similarties_filename, 'w+')as file:
+            file.write("IP_addresses: \n")
+            for ip in similarties:
+                file.write(ip+ "\n")
+
 
     # absolete
     def json_time_converter(self, timestamp):
@@ -279,7 +297,7 @@ class IP_filtering:
         for ip in match_list:
             indicator = {}
 
-            with open(os.path.join(sys.path[0], 'output3.csv'), 'at',newline='') as file:
+            with open(self.whois_filename, 'at',newline='') as file:
                 writer = csv.writer(file)
                 indicator['Queried_IP:'] = ip
                 # check if IP is private address.
