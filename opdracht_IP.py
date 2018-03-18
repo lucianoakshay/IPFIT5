@@ -35,19 +35,10 @@ class IP_filtering:
             'MF',
             'CNAME',
             'SOA',
-            'MB',
-            'MG',
-            'MR',
-            'NULL',
-            'WKS',
             'PTR',
-            'HINFO',
-            'MINFO',
             'MX',
             'TXT',
-            'RP',
             'AFSDB',
-            'X25',
             'ISDN',
             'RT',
             'NSAP',
@@ -63,17 +54,12 @@ class IP_filtering:
             'NAPTR',
             'KX',
             'CERT',
-            'A6',
             'DNAME',
-            'OPT',
             'APL',
-            'DS',
             'SSHFP',
             'IPSECKEY',
-            'RRSIG',
             'NSEC',
             'DNSKEY',
-            'DHCID',
             'NSEC3',
             'NSEC3PARAM',
             'TLSA',
@@ -83,19 +69,13 @@ class IP_filtering:
             'CSYNC',
             'SPF',
             'UNSPEC',
-            'EUI48',
-            'EUI64',
             'TKEY',
             'TSIG',
             'IXFR',
             'AXFR',
-            'MAILB',
             'MAILA',
-            'ANY',
-            'URI',
             'CAA',
-            'TA',
-            'DLV',
+
         ]
     #Log = User_Interface.Main_program().Logging()
 
@@ -156,8 +136,8 @@ class IP_filtering:
             if compare_output:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
-
-                print("The following files has been created:" + self.ip_filename + "\n"+ self.whois_filename)
+                self.Log.info ( "Created files:"+"\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
+                print("The following files has been created:" + "\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
             else:
                 self.Log.info ("No similarities found in: " + compare_file)
                 print("No similarties found")
@@ -167,7 +147,9 @@ class IP_filtering:
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtering for IP-adress")
         else:
+            self.Log.info("No IP-addresses found.")
             print("No IP addresses could be found in the files:" +str(bestanden))
+
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -187,7 +169,7 @@ class IP_filtering:
         print(self.bestanden)
         # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
-
+            self.Log.info("Opening file: "+ bestand)
             pcap =open (bestand,'rb')
             pcap = dpkt.pcap.Reader(pcap)
             for timestamp,buf in pcap:
@@ -269,8 +251,8 @@ class IP_filtering:
             print("The following similarties have been found:")
             for ip in match_list:
                 print(ip)
+
             self.write_compare(match_list)
-            print("Will be written to: "+ self.similarties_filename)
             return match_list
 
         else:
@@ -279,6 +261,7 @@ class IP_filtering:
         # else:
         #     User_Interface.Main_program().run()
     def write_compare(self,similarties):
+        self.Log.info("Writing simalarites file to: " + self.similarties_filename)
         with open(self.similarties_filename, 'w+')as file:
             file.write("IP_addresses: \n")
             for ip in similarties:
@@ -294,51 +277,57 @@ class IP_filtering:
     def WHOIS(self,match_list):
         print (match_list)
         dict= {}
+        dig_dictionary={}
         for ip in match_list:
             indicator = {}
-
+            self.Log.info("Writing WHOIS info to: "+ self.whois_filename)
             with open(self.whois_filename, 'at',newline='') as file:
                 writer = csv.writer(file)
                 indicator['Queried_IP:'] = ip
                 # check if IP is private address.
                 if ipaddress.ip_address(ip).is_private:
                     indicator['Queried_domain'] = "Private address space"
+                    dig_dictionary[ 'DIG']= "No values"
                 else:
-                    obj = IPWhois(ip)
-                    results = obj.lookup_rdap(depth=1)
-                    print(results)
-
+                    self.Log.info("Quering WHOIS lookup for IP: "+ str(ip))
                     try:
                         indicator['Queried_domain'] = socket.getfqdn(ip)
                         tld= get_tld('http://'+socket.getfqdn(ip))
                         dict =(pythonwhois.get_whois(tld))
+
+                        print (dict)
+                        dig_dictionary =self.dig(tld)
                     except TldDomainNotFound as e:
-                        print(e)
+                        print("TLD of IP couldn't be found, check your internet access")
                         continue
 
 
                 #nog opzoek naar een betere whois, kan raw evt weglaten.
 
                     del dict["raw"]
-                    print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
-                print (dict)
                 indicator.update(dict)
                 # string = string.strip('['+']'+"\\n")
                 for key,value in indicator.items():
                     writer.writerow([key,value])
 
+                writer.writerow( "DIG results")
+                for key,value in dig_dictionary.items():
+                    writer.writerow([key,value])
                 writer.writerow( ['___________']*10)
     # function to preform a dig on a domain
     def dig(self, domain):
-
+        dig_dictionary = {}
         for record in self.IDS:
             try:
                 answers = dns.resolver.query(domain, record)
                 for rdata in answers:
-                    print(record, ':', rdata.to_text())
+                    # print(record, ':', rdata.to_text())
+                    dig_dictionary[record]= rdata.to_text()
 
             except Exception as e:
                 continue  # or pass
+        print(dig_dictionary)
+        return dig_dictionary
     # dit is dubbel op kan waarschijnlijk verplaatst worden naar de functie die het pcap bestand opent.
 
     # function to create a timelin, needs to be adjusted so that it can show the ports and the protocol.
@@ -346,7 +335,6 @@ class IP_filtering:
     def timeline(self, ip_list):
         print(self.bestanden)
         for bestand in self.bestanden:
-            print(bestand)
             pcap =open (os.path.join(sys.path[0], bestand),'rb')
             pcap = dpkt.pcap.Reader(pcap)
             # need to change the for loop because now it isn't sorted on IP-adress, but on date..
