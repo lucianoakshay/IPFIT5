@@ -14,9 +14,7 @@ from ipwhois import IPWhois
 import dpkt
 import pythonwhois
 import binascii
-from ipwhois.exceptions import IPDefinedError
-import logging
-from dpkt.udp import UDP
+
 from tld import get_tld
 from tld.exceptions import TldDomainNotFound
 import csv
@@ -146,8 +144,10 @@ class IP_filtering:
         self.Log = User_Interface.Main_program().Logging()
         self.bestanden = bestanden
         self.compare_input = compare_file
+        self.Log.info("Filtering files" + str(bestanden))
         output =self.Filter_IP(bestanden)
         if output and self.compare_input is not None:
+            self.write(output)
             compare_output =self.Compare(output,self.compare_input)
             if compare_output:
                 self.WHOIS(compare_output)
@@ -163,19 +163,6 @@ class IP_filtering:
     def set_compare(self,input_compare):
         self.compare_input = input_compare
 
-    def file_input(self):
-        lijst = []
-        dictionary={}
-        aantal = int(input('Input the ammount of files'))
-        #fout afhandeling
-        for i in range(aantal):
-            test = input('Input file: ')
-            print (test)
-            lijst.append(test)
-        #onderstaande kan in Filter_IP script
-        dictionary.update(self.Filter_IP(lijst))
-        print(dictionary)
-        self.write( dictionary)
 
         # determine if it's a relative path or an absolute path
     # moet in main zodat je het hier kan aanroepen voor elk input bestand.
@@ -185,10 +172,7 @@ class IP_filtering:
     def Filter_IP (self, bestanden):
 
         IP_list=Counter()
-        temp_list =[]
-        match_list ={}
-        hashes={}
-        temp_ip=''
+
         self.bestanden=bestanden
         print(self.bestanden)
         # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
@@ -237,7 +221,7 @@ class IP_filtering:
 
     #  will be used to write out the list of IP-adreses
     def write (self,input):
-        with open(os.path.join(sys.path[0],str(date.today())+'.txt'),'w+') as file:
+        with open(os.path.join(sys.path[0], 'IP-adresses_'+str(date.today())+'.txt'),'w+') as file:
             # file.write(filename + ':')strftime("%Y-%m-%d %H:%M", gmtime()))
             file.write('IP-address      count' +'\n')
             for ip, waarde in input.items():
@@ -257,24 +241,25 @@ class IP_filtering:
         for rij in bestand:
             print(rij)
             rij = rij.strip('\n')
-            temp_lijst.append(rij)
+            try:
+                ipaddress.ip_address(rij)
+                temp_lijst.append(rij)
+            except ValueError:
+                print("File seem to contain none valid IP-address")
+                print ("IP-address:" +str(rij) +"Will not be used to compare ")
+                temp_lijst.pop()
+                continue
+
         if temp_lijst:
             for ip in list(IPlijst.keys()):
                 # print(ip)
-                try:
-                    ipaddress.ip_address(ip)
-                    if ip in temp_lijst:
-                        # print(ip)
-                        match_list.append(ip)
-                except ValueError:
-                    print("File seem to contain none valid IP-addresses")
-                    User_Interface.Main_program.run()
+                if ip in temp_lijst:
+                    # print(ip)
+                    match_list.append(ip)
 
         else:
             print("File: ")
         if match_list:
-            print( "Match list")
-            print(match_list)
             return match_list
         else:
             print("no match")
@@ -282,7 +267,7 @@ class IP_filtering:
         # else:
         #     User_Interface.Main_program().run()
 
-
+    # absolete
     def json_time_converter(self, timestamp):
         if isinstance(timestamp, datetime.datetime):
             return timestamp.__str__()
