@@ -3,11 +3,8 @@
 # Student nr: s1090241
 #
 import sys
-# if (sys.version_info < (3, 0)):
-#    raise Exception('script should not be run with python2.x')
 import ipaddress
 import datetime
-# from time import gmtime,strftime
 from datetime import date
 import os
 import json
@@ -16,15 +13,14 @@ import dns.resolver
 from ipwhois import IPWhois
 import dpkt
 import pythonwhois
+import binascii
 from ipwhois.exceptions import IPDefinedError
 import logging
 from dpkt.udp import UDP
 from tld import get_tld
 from tld.exceptions import TldDomainNotFound
+import csv
 
-# else:
-#     raise ImportError('error')
-# to do
 # make sure that the input files are add here also make this class more fault tolerant
 
 
@@ -110,20 +106,36 @@ class IP_filtering:
         self.compare_input= None
         self.bestanden = None
         self.IP_list = None
-        # self.user = User_Interface.Main_program()
-        # self.Logger = User_Interface.Main_program().Logging()
-
-
-
-        # self.choices = {
-        #         "1": self.file_input,
-        #         "2": self.back,
-        #         "3": self.quit
-        #         }
-
-
-
-    #     User_Interface.Main_program().run()
+        self.protocol_list = {
+            20: 'FTP',
+            21: 'FTP',
+            22: 'SSH',
+            23: 'Telnet',
+            25: 'SMTP',
+            53: 'DNS',
+            67: 'DHCP',
+            68: 'DHCP',
+            69: 'TFTP',
+            80: 'HTTP',
+            110: 'POP',
+            119: 'NNTP',
+            123: 'NTP',
+            137: 'NETBIOS',
+            138: 'NETBIOS',
+            139: 'NETBIOS',
+            143: 'IMAP',
+            161: 'SNMP',
+            162: 'SNMP',
+            389: 'LDAP',
+            443: 'HTTPS',
+            445: 'SMB',
+            485: 'SMTP/SSL',
+            546: 'DHCP ipv6',
+            547: 'DHCP ipv6',
+            990: 'FTPS',
+            993: 'IMAP',
+            995: 'POP3 /ssl'
+        }
 
     def quit(self):
         sys.exit(0)
@@ -135,16 +147,17 @@ class IP_filtering:
         self.bestanden = bestanden
         self.compare_input = compare_file
         output =self.Filter_IP(bestanden)
-        print(output)
         if output and self.compare_input is not None:
             compare_output =self.Compare(output,self.compare_input)
             if compare_output:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
             else:
-                print ("Not available")
+                self.Log.info ("No similarities found in: " + compare_file)
+                print("No similarties found")
         else:
-            print("No input given")
+            self.Log.error("No IP-adresses could be filtered out")
+            print("No IP addresses could be found")
     # also absolete class this will be handeled in the user interface class
 
     def set_compare(self,input_compare):
@@ -189,9 +202,7 @@ class IP_filtering:
             pcap = dpkt.pcap.Reader(pcap)
             for timestamp,buf in pcap:
                 eth = dpkt.ethernet.Ethernet(buf)
-                if not isinstance(eth.data, dpkt.ip.IP):
-                   # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
-                   continue
+
 
 
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
@@ -199,16 +210,22 @@ class IP_filtering:
                     # for compare_ip in compare_bestand:
                     #     if compare_ip == self.convert_IP(ipv6.src):
                     #         match_list[os.path.join(sys.path[0],bestand)]=compare_ip
-
+                    print(self.convert_IP(ipv6.src))
+                    print(self.convert_IP(ipv6.dst))
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
 
 
                     # print(self.convert_IP(ipv6.src))
                     # print(self.convert_IP(ipv6.dst))
-                ip=eth.data
-                IP_list[self.convert_IP(ip.src)]+=1
-                IP_list[self.convert_IP(ip.dst)]+=1
+                elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
+                    ip=eth.data
+                    IP_list[self.convert_IP(ip.src)]+=1
+                    IP_list[self.convert_IP(ip.dst)]+=1
+
+                if not isinstance(eth.data, dpkt.ip.IP):
+                   # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
+                   continue
 
         return IP_list
     # will be used to convert an hex ip to an human readable format
@@ -244,15 +261,20 @@ class IP_filtering:
         if temp_lijst:
             for ip in list(IPlijst.keys()):
                 # print(ip)
-                if ip in temp_lijst:
-                    # print(ip)
-                    match_list.append(ip)
+                try:
+                    ipaddress.ip_address(ip)
+                    if ip in temp_lijst:
+                        # print(ip)
+                        match_list.append(ip)
+                except ValueError:
+                    print("File seem to contain none valid IP-addresses")
+                    User_Interface.Main_program.run()
 
         else:
-            print("file is empty")
+            print("File: ")
         if match_list:
+            print( "Match list")
             print(match_list)
-            print(self.bestanden)
             return match_list
         else:
             print("no match")
@@ -268,11 +290,12 @@ class IP_filtering:
     # function to get the whois information about an IP
     def WHOIS(self,match_list):
         print (match_list)
-
+        dict= {}
         for ip in match_list:
             indicator = {}
 
-            with open(os.path.join(sys.path[0], 'output3.json'), 'at') as file:
+            with open(os.path.join(sys.path[0], 'output3.csv'), 'at',newline='') as file:
+                writer = csv.writer(file)
                 indicator['Queried_IP:'] = ip
                 # check if IP is private address.
                 if ipaddress.ip_address(ip).is_private:
@@ -297,9 +320,11 @@ class IP_filtering:
                     print(self.dig(get_tld('http://'+socket.getfqdn(ip))))
                 print (dict)
                 indicator.update(dict)
-                print(indicator)
                 # string = string.strip('['+']'+"\\n")
-                file.write(json.dumps(indicator,default=self.json_time_converter))
+                for key,value in indicator.items():
+                    writer.writerow([key,value])
+
+                writer.writerow( ['___________']*10)
     # function to preform a dig on a domain
     def dig(self, domain):
 
@@ -337,58 +362,80 @@ class IP_filtering:
 
                     if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                         ipv6 = eth.data
-                        fh = dpkt.ip.IP_PROTO_FRAGMENT
-                        ic = dpkt.ip.IP_PROTO_ICMP6
-                        icmpv6 = ipv6.data
+                        print(ip)
+                        if(self.convert_IP(ipv6.src)) == ip or self.convert_IP(ipv6.dst)==ip:
+
+                            fh = dpkt.ip.IP_PROTO_FRAGMENT
+                            ic = dpkt.ip.IP_PROTO_ICMP6
+                            icmpv6 = ipv6.data
 
 
-                        # get src and dst ip address
-                        # src_ip = socket.inet_ntop( ipv6.src)
-                        # dst_ip = socket.inet_ntop(ipv6.dst)
-                        print(self.convert_IP(ipv6.src))
-                    elif eth.type !=dpkt.ethernet.ETH_TYPE_IP:
-                        print("Not supported eth type")
-                        continue
-                    else:
+                            # get src and dst ip address
+                            # src_ip = socket.inet_ntop( ipv6.src)
+                            # dst_ip = socket.inet_ntop(ipv6.dst)
+                            print(self.convert_IP(ipv6.src))
+                            tcp=ipv6.data
+                            print (tcp.sport)
+                            print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
+                            print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)), eth.type)
+                            print( 'IP: %s -> %s   \n' % \
+                                (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst)))
+                    elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
                         if(self.convert_IP(ipv4.src)) == ip:
                             print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                            print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
+                            print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)))
+                            print( 'IP: %s -> %s   (len=%d ttl=%d)' % \
                             (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
-                            if ipv4.p== dpkt.ip.IP_PROTO_UDP:
+                            if ipv4.p== dpkt.ip.IP_PROTO_UDP :
                                 udp =ipv4.data
                                 udp_source_port = udp.sport
                                 udp_destination_port = udp.dport
                                 print("Protocol: UDP\n"
                                       "Source port: "+ str(udp_source_port)+ "\n"
-                                      "Destination port: "+ str(udp_destination_port))
-
-                            elif ipv4.p==dpkt.ip.IP_PROTO_TCP:
-                                tcp=ipv4.data
+                                      "Destination port: "+ str(udp_destination_port) +  '\n')
+                            elif ipv4.p == dpkt.ip.IP_PROTO_TCP:
+                                tcp = ipv4.data
                                 tcp_source_port = tcp.sport
                                 tcp_destination_port = tcp.dport
-                                print("Protocol: TCP\n"
-                                      "Source port: "+ str(tcp_source_port)+ "\n"
-                                      "Destination port: "+ str(tcp_destination_port))
+
+                                print ("Protocol: TCP\n"
+                                       "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
+                                       "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
 
                             elif ipv4.p == dpkt.ip.IP_PROTO_ICMP:
                                 print("Protocol: ICMP")
                             else:
                                 print( ipv4.p)
+                    # elif eth.type ==dpkt.ethernet.ETH_TYPE_ARP:
+                    #     arp = eth.arp
+                    #     print(self.convert_to_mac(binascii.hexlify(arp.sha)))
+                    #     print(self.convert_to_mac(binascii.hexlify(arp.tha)))
+                    # else:
+                    #     print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
 
 
-# test = IP_filtering()
-# IP_filtering.timeline(test,"C:\\Users\\kvandersijs\\PycharmProjects\\IPFIT5\\003hslmwa.pcap","C:\\Users\\kvandersijs\\PycharmProjects\\IPFIT5\\IP.txt")
+    def check_protocol(self, port):
+        protocol = ''
+        if int(port) < 1024:
+            if int(port) in self.protocol_list:
+               protocol= str(port) + " "+str(self.protocol_list[port])
+
+            else:
+                protocol = str(port + ' Unknown protocol')
+        elif int(port) > 1024 and int(port) <49151:
+            protocol = (str(port)+ ' Registered port')
+        else:
+            protocol= (str(port) + ' Dynamic port')
+        return protocol
 
 
-# if __name__ == "__main__":
-#     IP_filtering().run_ip()
-#     # self.timeline('003hslmwa.pcap',compare('IP.txt',Filter_IP('003hslmwa.pcap')))
-#
-#     # 184.50.160.199
-#     # bestand =bestand
-#     # file = open(bestand, 'r')
-#     # pcap =dpkt.pcap.Reader(file)
-#     # for ts, buf in pcap:
-#     #eth = dpkt.ethernet.Ethernet(buf)
+    def convert_to_mac(self, macadress):
+        s = list()
+        for i in range(int(12/2)) :  # mac_addr should always be 12 chars, we work in groups of 2 chars
+                s.append( macadress[i*2:i*2+2].decode("utf-8") )
+        r = ":".join(s)
+        return r
+
+    # def output_to_string(self,):
