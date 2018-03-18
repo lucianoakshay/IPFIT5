@@ -19,7 +19,7 @@ class Main_program:
 
     def __init__(self):
         self.sha256hash = hash.sha256()
-
+        self.log_location = os.path.join(sys.path[0],'Main.log')
         self.IP = opdracht_IP.IP_filtering()
         self.compare_file= None
         self.choices_main = {
@@ -43,7 +43,7 @@ class Main_program:
 
         if not len(logger.handlers):
             logger.setLevel(logging.INFO)
-            handler = logging.FileHandler(os.path.join(sys.path[0],'Main.log'))
+            handler = logging.FileHandler(self.log_location)
             handler.setLevel(logging.INFO)
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
@@ -150,25 +150,39 @@ Menu
             except ValueError:
                 print("This is not a number please enter a valid number between 1 - 10")
             except NotPositiveError:
-                print("Please enter a positive number, otherwise the whole application will cause total mayhem")
+                if amount < 0:
+                    print("Please enter a positive number, otherwise the whole application will cause total mayhem")
+                elif amount >=11:
+                    print( "The amount of PCAP files exceeds 10")
 
         for i in range(amount):
             while True:
                 test = input('Input pcap file: ')
-                if self.exists(test):
-                    file_list.append(os.path.abspath(test))
-                    break
+                if self.exists(test, 'PCAP'):
+                    if test.endswith( '.pcap'):
+                        if (os.path.abspath(test)) not in file_list:
+
+                            file_list.append(os.path.abspath(test))
+                            break
+                        elif (os.path.abspath(test)) in file_list:
+                            print("You added the same file twice, please add a different file:")
+
+                    else:
+                        print( "File isn't a .pcap file")
+                elif test == 'C':
+                    print("Cancel. Restarting script")
+                    self.run()
                 else:
                     print("File doesn't exist please enter a valid filename.")
 
-        print("Do you want to compare these files against an other file?(Y/N)")
+        print("Do you want to compare these files against an other file?(Y/N/C)")
         while True:
             compare = input()
             if compare == "Y":
                 print("Please enter the file where you want to compare against:")
                 while True:
                     compare_file =input("")
-                    if self.exists(compare_file):
+                    if self.exists(compare_file, 'PCAP'):
                         self.Logging().info("Opening file: "+ compare_file)
                         print(compare_file)
                         self.compare_file = compare_file
@@ -181,8 +195,11 @@ Menu
             if compare == "N":
                 print("Will only filter out the IP adresses")
                 break
+            if compare == "C":
+                print("Cancel. Restarting script")
+                self.run()
             else:
-                print("That's not a valid input please enter either N or Y")
+                print("That's not a valid input please enter either N/Y or C to cancel")
         # self.IP.main()
         self.IP.main(file_list,self.compare_file)
         # output =self.IP.Filter_IP(file_list)
@@ -193,21 +210,20 @@ Menu
         # self.IP.timeline(output2)
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
-    def exists(self,file):
+    def exists(self,file,naam):
 
         if os.path.exists(file):
-            with open("Hashes"+str(date.today())+ ".txt", 'a+') as f:
-                f.write(file+ ':'+self.bereken_hash(file))
+            with open("Hashes_"+naam+str(date.today())+ ".txt", 'a+') as f:
+                f.write(file+ ':'+self.bereken_hash(file)+  '\n')
             (self.bereken_hash(file))
             return True
         else:
-            print("File:"+file+ "doesn't exists, restarting script...")
             return False
 
     # will shutdown the script
     def quit(self):
         self.Logging().info("Exiting script")
-        print("Exiting script the log files are written to: ")
+        print("Exiting script the log files are written to: " + str(self.log_location) )
         sys.exit(0)
 
 #this function will run the main function when script is called
