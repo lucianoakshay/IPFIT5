@@ -67,6 +67,7 @@ class gehakt:
 
         print(file_dict)
         print(len(file_dict))
+        return file_dict
 
 
 
