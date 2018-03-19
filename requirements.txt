@@ -1,0 +1,12 @@
+chardet==3.0.4
+dpkt==1.9.1
+dnspython==1.15.0
+ipwhois==1.0.0
+pythonwhois==2.4.3
+idna==2.6
+tld==0.7.9
+tqdm==4.19.7
+virustotal-api==1.1.10
+requests==2.18.4
+six==1.11.0
+
