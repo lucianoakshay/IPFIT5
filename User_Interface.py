@@ -10,6 +10,7 @@ from datetime import date
 from urllib.request import urlopen
 from urllib.error import URLError
 from virus_total_apis import PublicApi as virustotal
+import json
 class NotPositiveError(UserWarning):
     pass
 
@@ -21,7 +22,7 @@ class Main_program:
 
     def __init__(self):
         self.sha256hash = hash.sha256()
-
+        self.internet_access = False
         self.IP = opdracht_IP.IP_filtering()
         temp_path =os.path.join(sys.path[0],"log")
         if not os.path.exists(temp_path):
@@ -51,8 +52,10 @@ class Main_program:
     def internet_on(self):
         try:
             urlopen('http://google.com', timeout=2)
+            self.internet_access = True
             return True
         except URLError as err:
+            self.internet_access =False
             return False
 
     def back(self):
@@ -231,8 +234,22 @@ Menu
         # # IP_script.write(dictionary)
         # output2=self.IP.compare(output)
         # self.IP.timeline(output2)
-    def virustotal_scanner(self, file_hash):
+    #     need to find a solution for the limit of 4 request per minute.
+    def virustotal_scanner(self, file_hash, filename):
+
         print("Uploading hash to virustotal")
+        vt = virustotal(self.API_KEY)
+        if self.internet_access:
+            response = vt.get_file_report(file_hash)
+
+        # output = json.loads(response.text)
+            if (int(response["results"]["positives"]) > 4):
+                print( "Plausible virus detected in: " + filename)
+                print( "Results are stored in:")
+
+
+            print(json.dumps(response, sort_keys=False,indent =4))
+        print()
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
     def exists(self,file,naam):
