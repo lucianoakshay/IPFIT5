@@ -30,27 +30,28 @@ class gehakt:
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
 
+    def walkdir(self, folder):
+        """Walk through each files in a directory"""
+        for dirpath, dirs, files in os.walk(folder):
+            for filename in files:
+                yield os.path.abspath(os.path.join(dirpath, filename))
+
     def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
         file_dict = {}
 
         # File counter die aan het begin alle files telt voor de progress bar
         filecounter = 0
-        for subdir, dirs, files in os.walk(mounting_dir):
-            for file in files:
-                filecounter += 1
+        for filepath in self.walkdir(mounting_dir):
+            filecounter += 1
 
-        # Loop die een variabele met het path naar een file update zodat iedere file in de directory wordt afgelopen.
-        # Vervolgens worden de subdir en de file gejoind in de variabele current_dir
-        # Hierna wordt een betreffende directory meegegeven aan een splitext commando die de extensie van de file afhaald
-        for subdir, dirs, files in tqdm(os.walk(mounting_dir), total=filecounter, unit="files"):
-            for file in files:
-                current_dir = (os.path.join(subdir, file))
-                hash_waarde = User_Interface.Main_program().bereken_hash(current_dir)
-                filename, file_extension = os.path.splitext(current_dir)
-                file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
+        for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
+            hash_waarde = User_Interface.Main_program().bereken_hash(filepath)
+            filename, file_extension = os.path.splitext(filepath)
+            file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
+
         print(file_dict)
-
+        print(len(file_dict))
 
 
 
