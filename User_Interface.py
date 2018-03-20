@@ -40,12 +40,7 @@ class Main_program:
                 "2": self.back,
                 "3": self.quit
         }
-        if not self.internet_on():
-            self.Logging().warning("No internet access, virus scaning is disabled. Also reduced functionality of the IP script")
-            print("#"*48)
-            print("# No internet access, virusscanner is disabled #")
-            print("# IP_script will not be able to get WHOIS info #")
-            print("#"*48)
+
 
 
 
@@ -121,6 +116,12 @@ Menu
 
     # will start the IP script
     def IP_script(self):
+        if not self.internet_on():
+            self.Logging().warning("No internet access, virus scaning is disabled. Also reduced functionality of the IP script")
+            print("#"*48)
+            print("# No internet access, virusscanner is disabled #")
+            print("# IP_script will not be able to get WHOIS info #")
+            print("#"*48)
         self.Logging().info("Starting IP_script")
         # import opdracht_IP
         while True:
