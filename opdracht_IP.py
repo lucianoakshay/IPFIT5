@@ -14,7 +14,7 @@ from ipwhois import IPWhois
 import dpkt
 import pythonwhois
 import binascii
-
+import berserker_resolver as Resolver
 from tld import get_tld
 from tld.exceptions import TldDomainNotFound
 import csv
@@ -62,21 +62,24 @@ class IP_filtering:
             'DNSKEY',
             'NSEC3',
             'NSEC3PARAM',
-            'TLSA',
-            'HIP',
             'CDS',
             'CDNSKEY',
             'CSYNC',
             'SPF',
             'UNSPEC',
-            'TKEY',
             'TSIG',
             'IXFR',
             'AXFR',
             'MAILA',
             'CAA',
-
         ]
+    IDS2=['A',
+            'NS',
+            'MD',
+            'MF',
+            'CNAME'
+
+    ]
     #Log = User_Interface.Main_program().Logging()
 
     def __init__(self):
@@ -122,7 +125,7 @@ class IP_filtering:
         sys.exit(0)
     # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
 
-    def main(self,bestanden,compare_file):
+    def main(self,bestanden,compare_file, internet):
 
         self.Log = User_Interface.Main_program().Logging()
         self.bestanden = bestanden
@@ -133,16 +136,21 @@ class IP_filtering:
         if output and self.compare_input is not None:
             self.write_IP(output,self.ip_filename)
             compare_output =self.Compare(output,self.compare_input)
-            if compare_output:
+            if compare_output and internet:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
                 self.Log.info ( "Created files:"+"\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
                 print("The following files has been created:" + "\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
+
+            elif compare_output and not internet:
+                print("No internet access")
+                self.Log.info ( "Created files:"+"\n"+self.ip_filename +  "\n" + self.similarties_filename)
+                print("The following files has been created:" + "\n"+self.ip_filename +  "\n" + self.similarties_filename)
             else:
                 self.Log.info ("No similarities found in: " + compare_file)
                 print("No similarties found")
 
-                print("The following files has been created:" + self.ip_filename + self.whois_filename)
+                print("The following files has been created:" + self.ip_filename )
         elif output and self.compare_input is None:
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtering for IP-adress")
@@ -166,7 +174,6 @@ class IP_filtering:
         IP_list=Counter()
 
         self.bestanden=bestanden
-        print(self.bestanden)
         # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
             self.Log.info("Opening file: "+ bestand)
@@ -182,8 +189,8 @@ class IP_filtering:
                     # for compare_ip in compare_bestand:
                     #     if compare_ip == self.convert_IP(ipv6.src):
                     #         match_list[os.path.join(sys.path[0],bestand)]=compare_ip
-                    print(self.convert_IP(ipv6.src))
-                    print(self.convert_IP(ipv6.dst))
+                    # print(self.convert_IP(ipv6.src))
+                    # print(self.convert_IP(ipv6.dst))
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
 
@@ -214,8 +221,8 @@ class IP_filtering:
         with open(filename,'w+') as file:
             file.write('IP-address      count' +'\n')
             for ip, waarde in input.items():
-                print(ip)
-                print(waarde)
+                # print(ip)
+                # print(waarde)
                 file.write( '{0:<16} {1:>8}'.format(ip,str(waarde))+'\n')
             file.flush()
         file.close()
@@ -295,7 +302,7 @@ class IP_filtering:
                         tld= get_tld('http://'+socket.getfqdn(ip))
                         dict =(pythonwhois.get_whois(tld))
 
-                        print (dict)
+                        print (tld)
                         dig_dictionary =self.dig(tld)
                     except TldDomainNotFound as e:
                         print("TLD of IP couldn't be found, check your internet access")
@@ -316,15 +323,20 @@ class IP_filtering:
                 writer.writerow( ['___________']*10)
     # function to preform a dig on a domain
     def dig(self, domain):
-        dig_dictionary = {}
+        dig_dictionary = dict()
+        self.Log.info("Preforming DIG on domain:"+ domain)
         for record in self.IDS:
             try:
                 answers = dns.resolver.query(domain, record)
                 for rdata in answers:
-                    # print(record, ':', rdata.to_text())
-                    dig_dictionary[record]= rdata.to_text()
+                    print(record, ':', rdata.to_text())
+                    if record in dig_dictionary:
+                        dig_dictionary[record] += "\n"+ rdata.to_text()
+                    else:
+                        dig_dictionary[record]=rdata.to_text()
 
             except Exception as e:
+                print (e)
                 continue  # or pass
         print(dig_dictionary)
         return dig_dictionary
