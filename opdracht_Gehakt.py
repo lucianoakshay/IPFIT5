@@ -2,7 +2,6 @@ import os
 import User_Interface
 from tqdm import tqdm
 import subprocess
-import hashlib as hash
 
 class gehakt:
 
@@ -12,20 +11,6 @@ class gehakt:
 
         # File list wordt aangeroepen om een dictionary te maken van alle files op de image
         file_dict = self.file_list(mounting_dir)
-
-    def bereken_hash2(self, bestand):
-        sha256hash = hash.sha256()
-        BUFFERSIZE = 65536
-        if os.path.isfile(bestand) and os.access(bestand, os.R_OK):
-            with open((bestand),'rb') as file:
-                file_buffer = file.read(BUFFERSIZE)
-                while len(file_buffer)>0:
-                    sha256hash.update(file_buffer)
-                    file_buffer= file.read(BUFFERSIZE)
-        else:
-            User_Interface.Main_program().Logging().info(bestand+": File does not exist or is not accessible")
-
-        return(str(sha256hash.hexdigest()))
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
