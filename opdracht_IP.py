@@ -14,7 +14,6 @@ from ipwhois import IPWhois
 import dpkt
 import pythonwhois
 import binascii
-import berserker_resolver as Resolver
 from tld import get_tld
 from tld.exceptions import TldDomainNotFound
 import csv
@@ -61,7 +60,6 @@ class IP_filtering:
             'NSEC',
             'DNSKEY',
             'NSEC3',
-            'NSEC3PARAM',
             'CDS',
             'CDNSKEY',
             'CSYNC',
@@ -73,13 +71,7 @@ class IP_filtering:
             'MAILA',
             'CAA',
         ]
-    IDS2=['A',
-            'NS',
-            'MD',
-            'MF',
-            'CNAME'
 
-    ]
     #Log = User_Interface.Main_program().Logging()
 
     def __init__(self):
@@ -90,6 +82,7 @@ class IP_filtering:
         self.whois_filename=os.path.join(sys.path[0], 'Whois_info_' + str(date.today())+ ".csv")
         self.ip_filename=os.path.join(sys.path[0],"IP_address_"+str(date.today())+".txt")
         self.similarties_filename= os.path.join(sys.path[0], "Similarities_"+ str(date.today())+ ".txt")
+        self.dig_filename = os.path.join(sys.path[0],"DIG_results"+ str(date.today())+  ".txt")
         self.protocol_list = {
             20: 'FTP',
             21: 'FTP',
@@ -317,23 +310,23 @@ class IP_filtering:
                 for key,value in indicator.items():
                     writer.writerow([key,value])
 
-                writer.writerow( "DIG results")
                 for key,value in dig_dictionary.items():
                     writer.writerow([key,value])
                 writer.writerow( ['___________']*10)
     # function to preform a dig on a domain
     def dig(self, domain):
+        output =  ''
         dig_dictionary = dict()
         self.Log.info("Preforming DIG on domain:"+ domain)
         for record in self.IDS:
             try:
-                answers = dns.resolver.query(domain, record)
-                for rdata in answers:
-                    print(record, ':', rdata.to_text())
-                    if record in dig_dictionary:
-                        dig_dictionary[record] += "\n"+ rdata.to_text()
-                    else:
-                        dig_dictionary[record]=rdata.to_text()
+                with open(self.dig_filename,  'at')as file:
+                    answers = dns.resolver.query(domain, record)
+                    for rdata in answers:
+                        output +=(record + ':'+ rdata.to_text()+"\n")
+                        print(output)
+                    dig_dictionary["DIG: "]=output
+                    file.write(output +  "\n")
 
             except Exception as e:
                 print (e)
@@ -378,8 +371,8 @@ class IP_filtering:
                                 udp_source_port = udp.sport
                                 udp_destination_port = udp.dport
                                 print("Protocol: UDP\n"
-                                      "Source port: "+ str(udp_source_port)+ "\n"
-                                      "Destination port: "+ str(udp_destination_port) +  '\n')
+                                      "Source port: "+ str(self.check_protocol(udp_source_port))+ "\n"
+                                      "Destination port: "+ str(self.check_protocol(udp_destination_port) +  '\n'))
                             elif ipv6.p == dpkt.ip.IP_PROTO_TCP:
                                 tcp = ipv6.data
                                 tcp_source_port = tcp.sport
