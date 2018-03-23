@@ -29,46 +29,21 @@ import User_Interface
 class IP_filtering:
     IDS = [
             'A',
+            'AAAA',
             'NS',
-            'MD',
-            'MF',
             'CNAME',
             'SOA',
             'PTR',
             'MX',
             'TXT',
-            'AFSDB',
-            'ISDN',
-            'RT',
-            'NSAP',
-            'NSAP-PTR',
             'SIG',
             'KEY',
-            'PX',
-            'GPOS',
-            'AAAA',
-            'LOC',
-            'NXT',
             'SRV',
-            'NAPTR',
-            'KX',
             'CERT',
-            'DNAME',
-            'APL',
-            'SSHFP',
             'IPSECKEY',
             'NSEC',
             'DNSKEY',
-            'NSEC3',
-            'CDS',
-            'CDNSKEY',
-            'CSYNC',
             'SPF',
-            'UNSPEC',
-            'TSIG',
-            'IXFR',
-            'AXFR',
-            'MAILA',
             'CAA',
         ]
 
@@ -323,15 +298,14 @@ class IP_filtering:
                 with open(self.dig_filename,  'at')as file:
                     answers = dns.resolver.query(domain, record)
                     for rdata in answers:
+
                         output +=(record + ':'+ rdata.to_text()+"\n")
-                        print(output)
                     dig_dictionary["DIG: "]=output
                     file.write(output +  "\n")
 
             except Exception as e:
                 print (e)
                 continue  # or pass
-        print(dig_dictionary)
         return dig_dictionary
     # dit is dubbel op kan waarschijnlijk verplaatst worden naar de functie die het pcap bestand opent.
 
@@ -435,7 +409,7 @@ class IP_filtering:
 
     def convert_to_mac(self, macadress):
         s = list()
-        for i in range(int(12/2)) :  # mac_addr should always be 12 chars, we work in groups of 2 chars
+        for i in range(int(12/2)) :  #should always be 12 chars, we work in groups of 2 chars
                 s.append( macadress[i*2:i*2+2].decode("utf-8") )
         r = ":".join(s)
         return r
