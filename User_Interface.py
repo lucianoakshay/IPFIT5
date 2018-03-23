@@ -28,6 +28,8 @@ class Main_program:
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
         self.log_location = os.path.join(sys.path[0],'log','Main.log')
+
+
         self.compare_file= None
         self.choices_main = {
                 "1": self.IP_script,
@@ -46,7 +48,7 @@ class Main_program:
 
     def internet_on(self):
         try:
-            urlopen('http://google.com', timeout=2)
+            urlopen('http://google.com', timeout=1)
             self.internet_access = True
             return True
         except URLError as err:
@@ -91,6 +93,12 @@ Menu
 3. Run_gehakt_script
 4. Quit
 """)
+        if not self.internet_on():
+            self.Logging().warning("No internet access, virus scanning is disabled. Also reduced functionality of the IP script")
+            print("#"*48)
+            print("# Warning no internet access.                  #")
+            print("# IP_script will not be able to get WHOIS info #")
+            print("#"*48)
 
     def display_IP_menu(self):
                         print("""
@@ -103,6 +111,7 @@ Menu
     # will run the main program
     def run(self):
         self.Logging().info("Starting Main_Script")
+
         while True:
             self.display_main_menu()
             choice = input("Enter an option: ")
@@ -116,12 +125,8 @@ Menu
 
     # will start the IP script
     def IP_script(self):
-        if not self.internet_on():
-            self.Logging().warning("No internet access, virus scaning is disabled. Also reduced functionality of the IP script")
-            print("#"*48)
-            print("# No internet access, virusscanner is disabled #")
-            print("# IP_script will not be able to get WHOIS info #")
-            print("#"*48)
+
+
         self.Logging().info("Starting IP_script")
         # import opdracht_IP
         while True:
@@ -228,7 +233,7 @@ Menu
                 print("That's not a valid input please enter either N/Y or C to cancel")
 
         # self.IP.main()
-        self.IP.main(file_list,self.compare_file)
+        self.IP.main(file_list,self.compare_file,self.internet_access)
         # output =self.IP.Filter_IP(file_list)
         # print(output)
         # dictionary.update(output)
