@@ -61,7 +61,7 @@ class gehakt:
             filecounter += 1
 
         for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
-            hash_waarde = self.bereken_hash2(filepath)
+            hash_waarde = User_Interface.Main_program().bereken_hash(filepath)
             filename, file_extension = os.path.splitext(filepath)
             file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
 
