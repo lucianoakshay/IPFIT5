@@ -27,6 +27,10 @@ class Main_program:
         temp_path =os.path.join(sys.path[0],"log")
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
+        temp_path = os.path.join(sys.path[0], "hash")
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
+        self.hash_location = os.path.join(sys.path[0],'hash','hashes.txt')
         self.log_location = os.path.join(sys.path[0],'log','Main.log')
 
 
@@ -258,15 +262,19 @@ Menu
         print()
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
-    def exists(self,file,naam):
+    def exists(self,file,name):
 
         if os.path.exists(file):
-            with open("Hashes_"+naam+str(date.today())+ ".txt", 'a+') as f:
-                f.write(file+ ':'+self.bereken_hash(file)+  '\n')
-            (self.bereken_hash(file))
+
+            (self.write_hash(file))
             return True
         else:
             return False
+
+    def write_hash(self,file):
+
+        with open(self.hash_location, 'a+') as f:
+            f.write("{:20}{:20}\n".format(file,self.bereken_hash(file)))
 
     # will shutdown the script
     def quit(self):
