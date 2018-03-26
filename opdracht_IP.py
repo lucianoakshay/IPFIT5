@@ -47,7 +47,6 @@ class IP_filtering:
             'CAA',
         ]
 
-    #Log = User_Interface.Main_program().Logging()
 
     def __init__(self):
         self.Log = None
@@ -142,7 +141,6 @@ class IP_filtering:
         IP_list=Counter()
 
         self.bestanden=bestanden
-        # compare_bestand = open(os.path.join(sys.path[0],self.compare_input),'r')
         for bestand in self.bestanden:
             self.Log.info("Opening file: "+ bestand)
             pcap =open (bestand,'rb')
@@ -154,24 +152,17 @@ class IP_filtering:
 
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6=eth.data
-                    # for compare_ip in compare_bestand:
-                    #     if compare_ip == self.convert_IP(ipv6.src):
-                    #         match_list[os.path.join(sys.path[0],bestand)]=compare_ip
-                    # print(self.convert_IP(ipv6.src))
-                    # print(self.convert_IP(ipv6.dst))
+
                     IP_list[self.convert_IP(ipv6.src)]+=1
                     IP_list[self.convert_IP(ipv6.dst)]+=1
 
 
-                    # print(self.convert_IP(ipv6.src))
-                    # print(self.convert_IP(ipv6.dst))
                 elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
                     ip=eth.data
                     IP_list[self.convert_IP(ip.src)]+=1
                     IP_list[self.convert_IP(ip.dst)]+=1
 
                 if not isinstance(eth.data, dpkt.ip.IP):
-                   # print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
                    continue
 
         return IP_list
@@ -320,57 +311,50 @@ class IP_filtering:
             for timestamp,buf in pcap:
                 eth = dpkt.ethernet.Ethernet(buf)
                 for ip in ip_list:
-                    # tcp = ip.data
-                    # print (ip)
-                  #   if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
-                  #       ipv6=eth.data
-                  #       if self.convert_IP(ipv6.src) == ip:
-                  #           print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                  #           print( 'IP: %s -> %s   (len=%d ttl=%d)\n' % \
-                  # (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst), ipv6.len, ipv6.ttl))
-                  # will now print ipv6 address, still need to implement that the function will print source and destination port.
 
-                    if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
-                        ipv6 = eth.data
-                        if(self.convert_IP(ipv6.src)) == ip or self.convert_IP(ipv6.dst)==ip:
-                            # get src and dst ip address
-                            # src_ip = socket.inet_ntop( ipv6.src)
-                            # dst_ip = socket.inet_ntop(ipv6.dst)
-                            print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                            print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)), eth.type)
-                            print( 'IP: %s -> %s   \n' % \
-                                (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst)))
-                            if ipv6.p== dpkt.ip.IP_PROTO_UDP :
-                                udp =ipv6.data
-                                udp_source_port = udp.sport
-                                udp_destination_port = udp.dport
-                                print("Protocol: UDP\n"
-                                      "Source port: "+ str(self.check_protocol(udp_source_port))+ "\n"
-                                      "Destination port: "+ str(self.check_protocol(udp_destination_port) +  '\n'))
-                            elif ipv6.p == dpkt.ip.IP_PROTO_TCP:
-                                tcp = ipv6.data
-                                tcp_source_port = tcp.sport
-                                tcp_destination_port = tcp.dport
+                    # if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
+                    #     ipv6 = eth.data
+                    #     if(self.convert_IP(ipv6.src)) == ip or self.convert_IP(ipv6.dst)==ip:
+                    #         print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
+                    #         print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)), eth.type)
+                    #         print( 'IP: %s -> %s   \n' % \
+                    #             (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst)))
+                    #         if ipv6.p== dpkt.ip.IP_PROTO_UDP :
+                    #             udp =ipv6.data
+                    #             udp_source_port = udp.sport
+                    #             udp_destination_port = udp.dport
+                    #             print("Protocol: UDP\n"
+                    #                   "Source port: "+ str(self.check_protocol(udp_source_port))+ "\n"
+                    #                   "Destination port: "+ str(self.check_protocol(udp_destination_port) +  '\n'))
+                    #
+                    #         elif ipv6.p == dpkt.ip.IP_PROTO_TCP:
+                    #             tcp = ipv6.data
+                    #             tcp_source_port = tcp.sport
+                    #             tcp_destination_port = tcp.dport
+                    #
+                    #             print ("Protocol: TCP\n"
+                    #                    "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
+                    #                    "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
 
-                                print ("Protocol: TCP\n"
-                                       "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
-                                       "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
-
-                    elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
+                    if eth.type == dpkt.ethernet.ETH_TYPE_IP or eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
                         if(self.convert_IP(ipv4.src)) == ip:
                             print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
                             print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)))
-                            print( 'IP: %s -> %s   (len=%d ttl=%d)' % \
-                            (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
+                            if eth.type == dpkt.ethernet.ETH_TYPE_IP:
+                                print( 'IP: %s -> %s   (len=%d ttl=%d)' % \
+                                (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
+                            else:
+                                print( 'IP: %s -> %s ' % \
+                                       (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst)))
                             if ipv4.p== dpkt.ip.IP_PROTO_UDP :
                                 udp =ipv4.data
                                 udp_source_port = udp.sport
                                 udp_destination_port = udp.dport
                                 print("Protocol: UDP\n"
-                                      "Source port: "+ str(udp_source_port)+ "\n"
-                                      "Destination port: "+ str(udp_destination_port) +  '\n')
+                                      "Source port: "+ self.check_protocol(udp_source_port)+ "\n"
+                                      "Destination port: "+ self.check_protocol(udp_destination_port) +  '\n')
                             elif ipv4.p == dpkt.ip.IP_PROTO_TCP:
                                 tcp = ipv4.data
                                 tcp_source_port = tcp.sport
@@ -384,12 +368,7 @@ class IP_filtering:
                                 print("Protocol: ICMP")
                             else:
                                 print( ipv4.p)
-                    # elif eth.type ==dpkt.ethernet.ETH_TYPE_ARP:
-                    #     arp = eth.arp
-                    #     print(self.convert_to_mac(binascii.hexlify(arp.sha)))
-                    #     print(self.convert_to_mac(binascii.hexlify(arp.tha)))
-                    # else:
-                    #     print('Non IP Packet type not supported %s\n' % eth.data.__class__.__name__)
+
 
 
     def check_protocol(self, port):
@@ -409,9 +388,8 @@ class IP_filtering:
 
     def convert_to_mac(self, macadress):
         s = list()
-        for i in range(int(12/2)) :  #should always be 12 chars, we work in groups of 2 chars
+        for i in range(int(12/2)) :
                 s.append( macadress[i*2:i*2+2].decode("utf-8") )
         r = ":".join(s)
         return r
 
-    # def output_to_string(self,):
