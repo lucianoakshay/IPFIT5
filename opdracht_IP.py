@@ -33,18 +33,13 @@ class IP_filtering:
             'NS',
             'CNAME',
             'SOA',
-            'PTR',
             'MX',
             'TXT',
-            'SIG',
-            'KEY',
             'SRV',
             'CERT',
-            'IPSECKEY',
             'NSEC',
             'DNSKEY',
             'SPF',
-            'CAA',
         ]
 
 
@@ -227,6 +222,7 @@ class IP_filtering:
         bestand.close()
         # else:
         #     User_Interface.Main_program().run()
+
     def write_compare(self,similarties):
         self.Log.info("Writing simalarites file to: " + self.similarties_filename)
         with open(self.similarties_filename, 'w+')as file:
@@ -290,7 +286,7 @@ class IP_filtering:
 
                 answers = dns.resolver.query(domain, record)
                 for rdata in answers:
-
+                    print(record + ':'+ rdata.to_text()+"\n")
                     output +=(record + ':'+ rdata.to_text()+"\n")
                 dig_dictionary["DIG: "]=output
 
