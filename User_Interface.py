@@ -5,6 +5,7 @@ import sys
 import hashlib as hash
 import logging
 import opdracht_IP
+from time import sleep
 import opdracht_Gehakt
 from datetime import date
 from urllib.request import urlopen
@@ -39,7 +40,8 @@ class Main_program:
                 "1": self.IP_script,
                 "2": self.Foto_script,
                 "3": self.Gehakt_script,
-                "4": self.quit
+                "4": self.virustotal_scanner,
+                "5": self.quit
                 }
         self.choices_ip = {
                 "1": self.input_pcap_file,
@@ -90,12 +92,14 @@ class Main_program:
         return(str(self.sha256hash.hexdigest()))
     # function that will print out the menu to the screen, ( needs some minor changes)
     def display_main_menu(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
         print("""
 Menu
 1. Run_IP_script
 2. Run_Foto_script
 3. Run_gehakt_script
-4. Quit
+4. Preform virusscan (very slow)
+5. Quit
 """)
         if not self.internet_on():
             self.Logging().warning("No internet access, virus scanning is disabled. Also reduced functionality of the IP script")
@@ -245,21 +249,57 @@ Menu
         # output2=self.IP.compare(output)
         # self.IP.timeline(output2)
     #     need to find a solution for the limit of 4 request per minute.
-    def virustotal_scanner(self, file_hash, filename):
-
-        print("Uploading hash to virustotal")
+    def virustotal_scanner(self):
+        hash_dict= {}
+        with open (self.hash_location) as file:
+            for line in file:
+                key,value = line.split()
+                if key in hash_dict:
+                    continue
+                hash_dict[key]=value
+        time =float(len(hash_dict)*15)
+        hour = time //3600
+        time %=3600
+        minutes = time //60
+        time %=60
+        seconds = time
+        print("This will take: h:m:s-> %d:%d:%d" % ( hour, minutes, seconds))
+        print("Do you want to continue ?(Y/N)")
+        while True:
+            choice = input("")
+            if  choice ==  "Y":
+                break
+            elif choice =="N":
+                self.run()
+            else:
+                print("please enter either Y or N")
+                continue
         vt = virustotal(self.API_KEY)
-        if self.internet_access:
-            response = vt.get_file_report(file_hash)
 
-        # output = json.loads(response.text)
-            if (int(response["results"]["positives"]) > 4):
-                print( "Plausible virus detected in: " + filename)
-                print( "Results are stored in:")
+        for key,value in hash_dict.items():
+
+            print("Uploading hash to virustotal")
+            sleep(15)
+
+            if self.internet_access:
+
+                response = vt.get_file_report(value)
+                print(response)
+                # if (response["results"]["verbose_msg"] =="The requested resource is not among the finished, queued or pending scans"):
+                #     vt.rescan_file(value)
+            # output = json.loads(response.text)
+                if  "positives" in response["results"]:
+                    if (int(response["results"]["positives"]) > 4):
+                        print( "Plausible virus detected in: " + key)
+                        print( "Results are stored in:")
 
 
-            print(json.dumps(response, sort_keys=False,indent =4))
-        print()
+                else:
+                    continue
+
+
+            #     print(json.dumps(response, sort_keys=False,indent =4))
+            # print()
 
     # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
     def exists(self,file,name):
