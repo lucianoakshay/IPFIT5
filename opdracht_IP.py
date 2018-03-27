@@ -56,7 +56,8 @@ class IP_filtering:
         self.whois_filename=os.path.join(sys.path[0], 'Whois_info_' + str(date.today())+ ".csv")
         self.ip_filename=os.path.join(sys.path[0],"IP_address_"+str(date.today())+".txt")
         self.similarties_filename= os.path.join(sys.path[0], "Similarities_"+ str(date.today())+ ".txt")
-        self.dig_filename = os.path.join(sys.path[0],"DIG_results"+ str(date.today())+  ".txt")
+        self.timeline_filename = os.path.join(sys.path[0],"Time_line output"+ str(date.today())+  ".txt")
+
         self.protocol_list = {
             20: 'FTP',
             21: 'FTP',
@@ -106,18 +107,18 @@ class IP_filtering:
             if compare_output and internet:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
-                self.Log.info ( "Created files:"+"\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
-                print("The following files has been created:" + "\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename)
+                self.Log.info ( "Created files:"+"\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename+  "\n" + self.timeline_filename)
+                print("The following files have been created:" + "\n"+self.ip_filename + "\n"+ self.whois_filename+  "\n" + self.similarties_filename+  "\n"+self.timeline_filename)
 
             elif compare_output and not internet:
                 print("No internet access")
                 self.Log.info ( "Created files:"+"\n"+self.ip_filename +  "\n" + self.similarties_filename)
-                print("The following files has been created:" + "\n"+self.ip_filename +  "\n" + self.similarties_filename)
+                print("The following files have been created:" + "\n"+self.ip_filename +  "\n" + self.similarties_filename)
             else:
                 self.Log.info ("No similarities found in: " + compare_file)
                 print("No similarties found")
 
-                print("The following files has been created:" + self.ip_filename )
+                print("The following files have been created:" + self.ip_filename )
         elif output and self.compare_input is None:
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtering for IP-adress")
@@ -253,7 +254,7 @@ class IP_filtering:
                 # check if IP is private address.
                 if ipaddress.ip_address(ip).is_private:
                     indicator['Queried_domain'] = "Private address space"
-                    dig_dictionary[ 'DIG']= "No values"
+                    dig_dictionary[ 'DIG:']= "No values"
                 else:
                     self.Log.info("Quering WHOIS lookup for IP: "+ str(ip))
                     try:
@@ -286,13 +287,13 @@ class IP_filtering:
         self.Log.info("Preforming DIG on domain:"+ domain)
         for record in self.IDS:
             try:
-                with open(self.dig_filename,  'at')as file:
-                    answers = dns.resolver.query(domain, record)
-                    for rdata in answers:
 
-                        output +=(record + ':'+ rdata.to_text()+"\n")
-                    dig_dictionary["DIG: "]=output
-                    file.write(output +  "\n")
+                answers = dns.resolver.query(domain, record)
+                for rdata in answers:
+
+                    output +=(record + ':'+ rdata.to_text()+"\n")
+                dig_dictionary["DIG: "]=output
+
 
             except Exception as e:
                 print (e)
@@ -305,8 +306,10 @@ class IP_filtering:
     def timeline(self, ip_list):
         print(self.bestanden)
         for bestand in self.bestanden:
+            self.Log.info("Opening pcap file"+ os.path.join(sys.path[0], bestand))
             pcap =open (os.path.join(sys.path[0], bestand),'rb')
             pcap = dpkt.pcap.Reader(pcap)
+            print( "Preforming timeline analyses:")
             # need to change the for loop because now it isn't sorted on IP-adress, but on date..
             for timestamp,buf in pcap:
                 eth = dpkt.ethernet.Ethernet(buf)
@@ -340,34 +343,39 @@ class IP_filtering:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
                         if(self.convert_IP(ipv4.src)) == ip:
-                            print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                            print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)))
-                            if eth.type == dpkt.ethernet.ETH_TYPE_IP:
-                                print( 'IP: %s -> %s   (len=%d ttl=%d)' % \
-                                (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
-                            else:
-                                print( 'IP: %s -> %s ' % \
-                                       (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst)))
-                            if ipv4.p== dpkt.ip.IP_PROTO_UDP :
-                                udp =ipv4.data
-                                udp_source_port = udp.sport
-                                udp_destination_port = udp.dport
-                                print("Protocol: UDP\n"
-                                      "Source port: "+ self.check_protocol(udp_source_port)+ "\n"
-                                      "Destination port: "+ self.check_protocol(udp_destination_port) +  '\n')
-                            elif ipv4.p == dpkt.ip.IP_PROTO_TCP:
-                                tcp = ipv4.data
-                                tcp_source_port = tcp.sport
-                                tcp_destination_port = tcp.dport
+                            with open(self.timeline_filename,  'at') as file:
+                                print('Timestamp: ' + str(datetime.datetime.utcfromtimestamp(timestamp)))
+                                file.write( 'Timestamp: ' + str(datetime.datetime.utcfromtimestamp(timestamp)) +  '\n')
+                                file.write('Mac Address: '+ self.convert_to_mac(binascii.hexlify(eth.src)) + "->" + self.convert_to_mac(binascii.hexlify(eth.dst))+ "\n")
+                                if eth.type == dpkt.ethernet.ETH_TYPE_IP:
+                                    print('IP: %s -> %s   (len=%d ttl=%d)' % \
+                                    (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
+                                    file.write( 'IP: %s -> %s   (len=%d ttl=%d)' % \
+                                    (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
+                                else:
+                                    file.write( 'IP: %s -> %s ' % \
+                                           (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst)))
+                                if ipv4.p== dpkt.ip.IP_PROTO_UDP :
+                                    udp =ipv4.data
+                                    udp_source_port = udp.sport
+                                    udp_destination_port = udp.dport
+                                    file.write("Protocol: UDP\n"
+                                          "Source port: "+ self.check_protocol(udp_source_port)+ "\n"
+                                          "Destination port: "+ self.check_protocol(udp_destination_port) +  '\n')
+                                elif ipv4.p == dpkt.ip.IP_PROTO_TCP:
+                                    tcp = ipv4.data
+                                    tcp_source_port = tcp.sport
+                                    tcp_destination_port = tcp.dport
 
-                                print ("Protocol: TCP\n"
-                                       "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
-                                       "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
+                                    file.write ("Protocol: TCP\n"
+                                           "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
+                                           "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
 
-                            elif ipv4.p == dpkt.ip.IP_PROTO_ICMP:
-                                print("Protocol: ICMP")
-                            else:
-                                print( ipv4.p)
+                                elif ipv4.p == dpkt.ip.IP_PROTO_ICMP:
+                                    print("Protocol: ICMP")
+                                else:
+                                    print( ipv4.p)
+                                file.write( "\n")
 
 
 
