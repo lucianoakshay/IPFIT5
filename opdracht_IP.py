@@ -7,10 +7,7 @@ import ipaddress
 import datetime
 from datetime import date
 import os
-import json
 import dns.resolver
-# if 'ipwhois'or 'pythonwhois' or 'tld' or 'dpkt'in sys.modules:
-from ipwhois import IPWhois
 import dpkt
 import pythonwhois
 import binascii
@@ -117,6 +114,7 @@ class IP_filtering:
         elif output and self.compare_input is None:
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtering for IP-adress")
+            print("Created files:"+"\n"+self.ip_filename)
         else:
             self.Log.info("No IP-addresses found.")
             print("No IP addresses could be found in the files:" +str(bestanden))
@@ -160,7 +158,7 @@ class IP_filtering:
 
                 if not isinstance(eth.data, dpkt.ip.IP):
                    continue
-
+        print(IP_list)
         return IP_list
     # will be used to convert an hex ip to an human readable format
     def convert_IP(self,ip_adress):
