@@ -2,6 +2,8 @@ import os
 import User_Interface
 from tqdm import tqdm
 import subprocess
+import mime_dictionary
+import magic
 
 class gehakt:
 
@@ -11,6 +13,10 @@ class gehakt:
 
         # File list wordt aangeroepen om een dictionary te maken van alle files op de image
         file_dict = self.file_list(mounting_dir)
+
+        #Magic function wordt aangeroepen om de file types te checken
+        wrong_files = self.magic_test(file_dict)
+        print(wrong_files)
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -30,11 +36,13 @@ class gehakt:
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
 
+
     def walkdir(self, folder):
         """Walk through each files in a directory"""
         for dirpath, dirs, files in os.walk(folder):
             for filename in files:
                 yield os.path.abspath(os.path.join(dirpath, filename))
+
 
     def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
@@ -48,11 +56,26 @@ class gehakt:
         for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
             hash_waarde = User_Interface.Main_program().bereken_hash(filepath)
             filename, file_extension = os.path.splitext(filepath)
-            file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
+            file_dict[filepath] = {"Extension": file_extension, "Hash value": hash_waarde}
 
-        print(file_dict)
-        print(len(file_dict))
         return file_dict
 
 
+    def magic_test(self, file_dict):
+        #List of bad files
+        bad_files = []
 
+        for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
+            curr_magic = magic.from_file(file, mime=True)
+            if file_dict[file]["Extension"] in mime_dictionary.dic:
+                if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
+                    continue
+                else:
+                    bad_files.append(file)
+                    User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
+                    print("Bad file found in '" + file + "'")
+            else:
+                User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
+                print("File with filepath: '" + file + "' not found in mime dictionary")
+
+        return bad_files

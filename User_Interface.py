@@ -92,7 +92,8 @@ class Main_program:
         return(str(self.sha256hash.hexdigest()))
     # function that will print out the menu to the screen, ( needs some minor changes)
     def display_main_menu(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        #Disabled for debugging purposes. Can be turned on again once development is finished.
+        #os.system('cls' if os.name == 'nt' else 'clear')
         print("""
 Menu
 1. Run_IP_script
