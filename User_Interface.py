@@ -160,7 +160,11 @@ Menu
 
     def Gehakt_script(self):
         self.Logging().info("Starting Gehakt_Script")
-        opdracht_Gehakt.gehakt.main_def(opdracht_Gehakt.gehakt(), input("Input the location of the image (.dd / .e01(not yet implemented)): "))
+        gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
+        while os.path.isfile(gehakt_image) == False:
+            print(gehakt_image + " is not an file. Please try again")
+            gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
+        opdracht_Gehakt.gehakt.main_def(opdracht_Gehakt.gehakt(), gehakt_image)
         print("This is the Gehakt_script that's now running")
 
 

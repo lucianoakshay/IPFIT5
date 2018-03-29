@@ -22,7 +22,6 @@ class gehakt:
     #E01 is not implemented yet
     def image_mount(self, given_dir):
         temporary_dir = input("Give a temporary mounting directory: ")
-        User_Interface.Main_program().Logging().info("User defined mounting directory: " + temporary_dir)
         # Checken of de directory bestaat. Indien dit niet het geval is wordt er gevraagd of deze aangemaakt moet worden.
         while os.path.isdir(temporary_dir) == False:
             create_dir = input("Directory does not exist. Do you want it to be created? Yes/No ")
@@ -32,6 +31,7 @@ class gehakt:
             else:
                 print("Please select another mounting directory.")
                 temporary_dir = input("Give a temporary mounting directory: ")
+        User_Interface.Main_program().Logging().info("User defined mounting directory: " + temporary_dir)
         # De image wordt read only gemount met een bash commando
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
@@ -53,10 +53,16 @@ class gehakt:
         for filepath in self.walkdir(mounting_dir):
             filecounter += 1
 
+        print("Locating and saving all files locations in directory to memory")
+        User_Interface.Main_program().Logging().info("Locating and saving all files locations in directory to memory")
+
         for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
             hash_waarde = User_Interface.Main_program().bereken_hash(filepath)
             filename, file_extension = os.path.splitext(filepath)
             file_dict[filepath] = {"Extension": file_extension, "Hash value": hash_waarde}
+
+        print("File search finished")
+        User_Interface.Main_program().Logging().info("File search finished")
 
         return file_dict
 
@@ -64,6 +70,9 @@ class gehakt:
     def magic_test(self, file_dict):
         #List of bad files
         bad_files = []
+
+        print("Searching for bad files")
+        User_Interface.Main_program().Logging().info("Searching for bad files")
 
         for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
             curr_magic = magic.from_file(file, mime=True)
@@ -73,9 +82,10 @@ class gehakt:
                 else:
                     bad_files.append(file)
                     User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
-                    print("Bad file found in '" + file + "'")
             else:
                 User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
-                print("File with filepath: '" + file + "' not found in mime dictionary")
+
+        print("Bad file search finished")
+        User_Interface.Main_program().Logging().info("Bad file search finished")
 
         return bad_files
