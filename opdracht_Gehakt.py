@@ -57,8 +57,6 @@ class gehakt:
             filename, file_extension = os.path.splitext(filepath)
             file_dict[filepath] = {"Extension": file_extension, "Hash value": hash_waarde}
 
-        print(file_dict)
-        print(len(file_dict))
         return file_dict
 
 
@@ -68,8 +66,8 @@ class gehakt:
 
         for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
             curr_magic = magic.from_file(file, mime=True)
-            if file["Extension"] in mime_dictionary.dic:
-                if curr_magic in mime_dictionary.dic["Extension"]:
+            if file_dict[file]["Extension"] in mime_dictionary.dic:
+                if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
                     continue
                 else:
                     bad_files.append(file)
