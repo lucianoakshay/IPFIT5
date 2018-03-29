@@ -8,10 +8,14 @@ import opdracht_IP
 from time import sleep
 import opdracht_Gehakt
 from datetime import date
+import datetime
 from urllib.request import urlopen
 from urllib.error import URLError
 from virus_total_apis import PublicApi as virustotal
 import json
+from socket import timeout
+
+
 class NotPositiveError(UserWarning):
     pass
 
@@ -31,7 +35,7 @@ class Main_program:
         temp_path = os.path.join(sys.path[0], "hash")
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
-        self.hash_location = os.path.join(sys.path[0],'hash','hashes.txt')
+        self.hash_location = os.path.join(sys.path[0],'hash')
         self.log_location = os.path.join(sys.path[0],'log','Main.log')
 
 
@@ -50,8 +54,6 @@ class Main_program:
         }
 
 
-
-
     def internet_on(self):
         try:
             urlopen('http://google.com', timeout=1)
@@ -59,6 +61,9 @@ class Main_program:
             return True
         except URLError as err:
             self.internet_access =False
+            return False
+        except timeout:
+            self.internet_access = False
             return False
 
     def back(self):
@@ -196,19 +201,19 @@ Menu
 
         for i in range(amount):
             while True:
-                test = input('Input pcap file: ')
-                if self.exists(test, 'PCAP'):
-                    if test.endswith( '.pcap'):
-                        if (os.path.abspath(test)) not in file_list:
-
-                            file_list.append(os.path.abspath(test))
+                user_input = input('Input pcap file or cancel C: ')
+                if os.path.exists(user_input):
+                    if user_input.endswith( '.pcap'):
+                        if (os.path.abspath(user_input)) not in file_list:
+                            self.write_hash(user_input)
+                            file_list.append(os.path.abspath(user_input))
                             break
-                        elif (os.path.abspath(test)) in file_list:
+                        elif (os.path.abspath(user_input)) in file_list:
                             print("You added the same file twice, please add a different file:")
 
                     else:
                         print( "File isn't a .pcap file")
-                elif test == 'C':
+                elif user_input == 'C':
                     print("Cancel. Restarting script")
                     self.run()
                 else:
@@ -218,15 +223,22 @@ Menu
         while True:
             compare = input()
             if compare == "Y":
-                print("Please enter the file where you want to compare against:")
+                print("Please enter the .txt file where you want to compare against:")
                 while True:
                     compare_file =input("")
-                    if self.exists(compare_file, 'PCAP'):
-                        self.Logging().info("Opening file: "+ compare_file)
-                        print(compare_file)
-                        self.compare_file = compare_file
-                        print(self.compare_file)
-                        break
+                    if os.path.exists(compare_file):
+                        if compare_file.endswith(".txt") or compare_file.endswith(".TXT"):
+                            self.write_hash(compare_file)
+                            self.Logging().info("Opening file: "+ compare_file)
+                            print(compare_file)
+                            self.compare_file = compare_file
+                            print(self.compare_file)
+                            break
+                        else:
+                            print("File isn't a .txt file")
+                            print("please enter a valid filename:")
+                            continue
+
                     else:
                         print("File doesn't exist.. Please enter a valid filename")
 
@@ -250,8 +262,10 @@ Menu
         # output2=self.IP.compare(output)
         # self.IP.timeline(output2)
     #     need to find a solution for the limit of 4 request per minute.
+
     def virustotal_scanner(self):
         hash_dict= {}
+
         with open (self.hash_location) as file:
             for line in file:
                 key,value = line.split()
@@ -266,6 +280,7 @@ Menu
         seconds = time
         print("This will take: h:m:s-> %d:%d:%d" % ( hour, minutes, seconds))
         print("Do you want to continue ?(Y/N)")
+
         while True:
             choice = input("")
             if  choice ==  "Y":
@@ -278,12 +293,10 @@ Menu
         vt = virustotal(self.API_KEY)
 
         for key,value in hash_dict.items():
-
             print("Uploading hash to virustotal")
             sleep(15)
 
             if self.internet_access:
-
                 response = vt.get_file_report(value)
                 print(response)
                 # if (response["results"]["verbose_msg"] =="The requested resource is not among the finished, queued or pending scans"):
@@ -293,7 +306,6 @@ Menu
                     if (int(response["results"]["positives"]) > 4):
                         print( "Plausible virus detected in: " + key)
                         print( "Results are stored in:")
-
 
                 else:
                     continue
@@ -312,10 +324,11 @@ Menu
         else:
             return False
 
-    def write_hash(self,file):
-
-        with open(self.hash_location, 'a+') as f:
-            f.write("{:20}{:20}\n".format(file,self.bereken_hash(file)))
+    def write_hash(self,file, name = "hashes.txt"):
+        path = os.path.join(sys.path[0],'hash', str(name))
+        print ( path)
+        with open(os.path.join(self.hash_location, name), 'a+') as f:
+            f.write("{:20}{:20}{:20}\n".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),file,self.bereken_hash(file)))
 
     # will shutdown the script
     def quit(self):
