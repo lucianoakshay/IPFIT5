@@ -2,6 +2,7 @@ import os
 import User_Interface
 from tqdm import tqdm
 import subprocess
+import mime_dictionary
 
 class gehakt:
 
@@ -11,6 +12,9 @@ class gehakt:
 
         # File list wordt aangeroepen om een dictionary te maken van alle files op de image
         file_dict = self.file_list(mounting_dir)
+
+        #Magic function wordt aangeroepen om de file types te checken
+        wrong_files = self.magic_test(file_dict)
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -30,11 +34,13 @@ class gehakt:
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
 
+
     def walkdir(self, folder):
         """Walk through each files in a directory"""
         for dirpath, dirs, files in os.walk(folder):
             for filename in files:
                 yield os.path.abspath(os.path.join(dirpath, filename))
+
 
     def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
@@ -48,11 +54,17 @@ class gehakt:
         for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
             hash_waarde = User_Interface.Main_program().bereken_hash(filepath)
             filename, file_extension = os.path.splitext(filepath)
-            file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
+            file_dict[filepath] = {"Extension": file_extension, "Hash value": hash_waarde}
 
         print(file_dict)
         print(len(file_dict))
         return file_dict
+
+
+    def magic_test(self, file_dict):
+
+        for file in file_dict:
+
 
 
 
