@@ -3,6 +3,7 @@ import User_Interface
 from tqdm import tqdm
 import subprocess
 import mime_dictionary
+import magic
 
 class gehakt:
 
@@ -62,9 +63,20 @@ class gehakt:
 
 
     def magic_test(self, file_dict):
+        #List of bad files
+        bad_files = []
 
-        for file in file_dict:
+        for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
+            curr_magic = magic.from_file(file, mime=True)
+            if file["Extension"] in mime_dictionary.dic:
+                if curr_magic in mime_dictionary.dic["Extension"]:
+                    continue
+                else:
+                    bad_files.append(file)
+                    User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
+                    print("Bad file found in '" + file + "'")
+            else:
+                User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
+                print("File with filepath: '" + file + "' not found in mime dictionary")
 
-
-
-
+        return bad_files
