@@ -16,6 +16,7 @@ class gehakt:
 
         #Magic function wordt aangeroepen om de file types te checken
         wrong_files = self.magic_test(file_dict)
+        print(wrong_files)
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
