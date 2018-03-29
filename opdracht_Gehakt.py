@@ -75,6 +75,9 @@ class gehakt:
         User_Interface.Main_program().Logging().info("Searching for bad files")
 
         for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
+            if "~$" in file:
+                User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
+                continue
             curr_magic = magic.from_file(file, mime=True)
             if file_dict[file]["Extension"] in mime_dictionary.dic:
                 if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
