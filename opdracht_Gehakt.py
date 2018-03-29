@@ -2,7 +2,7 @@ import os
 import User_Interface
 from tqdm import tqdm
 import subprocess
-import mime_dictionary
+import mime_dictionary2 as mime_dictionary
 import magic
 
 class gehakt:
