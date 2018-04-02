@@ -41,15 +41,26 @@ class IP_filtering:
 
 
     def __init__(self):
+        # Will be used to set the logger in the main function
         self.Log = None
+        # Will be used to set the compare file in the main function
         self.compare_input= None
-        self.bestanden = None
+        # Will be used to
+        self.pcap_files = None
+
         self.IP_list = None
+        # Will be used to set the filename for the WHOIS output
         self.whois_filename=os.path.join(sys.path[0], 'Whois_info_' + str(date.today())+ ".csv")
+
+        # Will be used to set the filename for the IP-adresses
         self.ip_filename=os.path.join(sys.path[0],"IP_address_"+str(date.today())+".txt")
+
         self.similarties_filename= os.path.join(sys.path[0], "Similarities_"+ str(date.today())+ ".txt")
+
+        # Will be used to set the name of the timeline file
         self.timeline_filename = os.path.join(sys.path[0],"Time_line output"+ str(date.today())+  ".txt")
 
+        # Protocol list, will be used to determine the protocol when creating the timeline
         self.protocol_list = {
             20: 'FTP',
             21: 'FTP',
@@ -80,22 +91,20 @@ class IP_filtering:
             993: 'IMAP',
             995: 'POP3 /ssl'
         }
-
-    def quit(self):
-        sys.exit(0)
-    # need to create a main function, so that the whole script will tune tihout the need to call the different functions.
-
-    def main(self,bestanden,compare_file, internet):
+    # The main function that will be used to start the IP-script. needs 3 arguments, the location of the pcap files the location of the list with IP-addresses and a boolean value to check if there is internet access
+    def main(self,pcap_files,compare_file, internet):
 
         self.Log = User_Interface.Main_program().Logging()
-        self.bestanden = bestanden
+        self.pcap_files = pcap_files
 
         self.compare_input = compare_file
-        self.Log.info("Filtering files" + str(bestanden))
-        output =self.Filter_IP(bestanden)
+        self.Log.info("Filtering files" + str(pcap_files))
+        output =self.Filter_IP(pcap_files)
+
         if output and self.compare_input is not None:
             self.write_IP(output,self.ip_filename)
             compare_output =self.Compare(output,self.compare_input)
+
             if compare_output and internet:
                 self.WHOIS(compare_output)
                 self.timeline(compare_output)
@@ -113,20 +122,12 @@ class IP_filtering:
                 print("The following files have been created:" + self.ip_filename )
         elif output and self.compare_input is None:
             self.Log.info("Will only filter For IP-addresses and will not compare")
-            print("Only filtering for IP-adress")
-            print("Created files:"+"\n"+self.ip_filename)
+            print("Only filtered out IP-addresses")
+            print("Created file:"+"\n"+self.ip_filename)
         else:
             self.Log.info("No IP-addresses found.")
-            print("No IP addresses could be found in the files:" +str(bestanden))
+            print("No IP addresses could be found in the files:" +str(pcap_files))
 
-    # also absolete class this will be handeled in the user interface class
-
-    def set_compare(self,input_compare):
-        self.compare_input = input_compare
-
-
-        # determine if it's a relative path or an absolute path
-    # moet in main zodat je het hier kan aanroepen voor elk input bestand.
 
 
     # class that will filter the IP adresses that resides in an pcap file
@@ -158,7 +159,7 @@ class IP_filtering:
 
                 if not isinstance(eth.data, dpkt.ip.IP):
                    continue
-        print(IP_list)
+
         return IP_list
     # will be used to convert an hex ip to an human readable format
     def convert_IP(self,ip_adress):
@@ -174,8 +175,7 @@ class IP_filtering:
         with open(filename,'w+') as file:
             file.write('IP-address      count' +'\n')
             for ip, waarde in input.items():
-                # print(ip)
-                # print(waarde)
+
                 file.write( '{0:<16} {1:>8}'.format(ip,str(waarde))+'\n')
             file.flush()
         file.close()
@@ -309,30 +309,6 @@ class IP_filtering:
                 eth = dpkt.ethernet.Ethernet(buf)
                 for ip in ip_list:
 
-                    # if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
-                    #     ipv6 = eth.data
-                    #     if(self.convert_IP(ipv6.src)) == ip or self.convert_IP(ipv6.dst)==ip:
-                    #         print( 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(timestamp)))
-                    #         print('Ethernet Frame: ', self.convert_to_mac(binascii.hexlify(eth.src)), self.convert_to_mac(binascii.hexlify(eth.dst)), eth.type)
-                    #         print( 'IP: %s -> %s   \n' % \
-                    #             (self.convert_IP(ipv6.src), self.convert_IP(ipv6.dst)))
-                    #         if ipv6.p== dpkt.ip.IP_PROTO_UDP :
-                    #             udp =ipv6.data
-                    #             udp_source_port = udp.sport
-                    #             udp_destination_port = udp.dport
-                    #             print("Protocol: UDP\n"
-                    #                   "Source port: "+ str(self.check_protocol(udp_source_port))+ "\n"
-                    #                   "Destination port: "+ str(self.check_protocol(udp_destination_port) +  '\n'))
-                    #
-                    #         elif ipv6.p == dpkt.ip.IP_PROTO_TCP:
-                    #             tcp = ipv6.data
-                    #             tcp_source_port = tcp.sport
-                    #             tcp_destination_port = tcp.dport
-                    #
-                    #             print ("Protocol: TCP\n"
-                    #                    "Source port: "+ self.check_protocol(tcp_source_port)+ "\n"
-                    #                    "Destination port:"+ self.check_protocol(tcp_destination_port) +  '\n')
-
                     if eth.type == dpkt.ethernet.ETH_TYPE_IP or eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
@@ -371,8 +347,7 @@ class IP_filtering:
                                     print( ipv4.p)
                                 file.write( "\n")
 
-
-
+    # will be used to check the protocol of an IP-package
     def check_protocol(self, port):
         protocol = ''
         if int(port) < 1024:
@@ -387,7 +362,7 @@ class IP_filtering:
             protocol= (str(port) + ' Dynamic port')
         return protocol
 
-
+    # will be used to convert hex mac adresses to printable characters
     def convert_to_mac(self, macadress):
         s = list()
         for i in range(int(12/2)) :
