@@ -12,7 +12,6 @@ import datetime
 from urllib.request import urlopen
 from urllib.error import URLError
 from virus_total_apis import PublicApi as virustotal
-import json
 from socket import timeout
 
 
@@ -36,10 +35,12 @@ class Main_program:
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
         self.hash_location = os.path.join(sys.path[0],'hash')
-        self.log_location = os.path.join(sys.path[0],'log','Main.log')
+        self.log_location = os.path.join(sys.path[0],'log','Main_log_'+str(date.today())+'.log')
 
 
         self.compare_file= None
+
+        # will be used to set the choices in the main menu
         self.choices_main = {
                 "1": self.IP_script,
                 "2": self.Foto_script,
@@ -47,13 +48,14 @@ class Main_program:
                 "4": self.virustotal_scanner,
                 "5": self.quit
                 }
+        # will be used to set the choices in the menu of the IP-script
         self.choices_ip = {
                 "1": self.input_pcap_file,
                 "2": self.back,
                 "3": self.quit
         }
 
-
+    # function that will check if there's internet access
     def internet_on(self):
         try:
             urlopen('http://google.com', timeout=1)
@@ -66,13 +68,15 @@ class Main_program:
             self.internet_access = False
             return False
 
+    # function that will be used to go back to the main program
     def back(self):
         Main_program().run()
-    # This is the logging function that will be used to log the activity of this script.
 
+    # This is the logging function that will be used to log the activity of this script.
     def Logging(self):
         logger = logging.getLogger(__name__)
 
+        # check if there already is a loggin handler, if not create one
         if not len(logger.handlers):
             logger.setLevel(logging.INFO)
             handler = logging.FileHandler(self.log_location)
@@ -81,9 +85,8 @@ class Main_program:
             handler.setFormatter(formatter)
             logger.addHandler(handler)
         return logger
-    # this function will calculate the sha256 hash of a file
-# misschien ff testen of de hash klopt
 
+    # this function will calculate the sha256 hash of a file
     def bereken_hash(self,bestand):
         if os.path.isfile(bestand) and os.access(bestand, os.R_OK):
             with open((bestand),'rb') as file:
@@ -95,7 +98,7 @@ class Main_program:
             self.Logging().info(bestand+": File does not exist or is not accessible")
 
         return(str(self.sha256hash.hexdigest()))
-    # function that will print out the menu to the screen, ( needs some minor changes)
+    # function that will print out the menu to the screen
     def display_main_menu(self):
         #Disabled for debugging purposes. Can be turned on again once development is finished.
         #os.system('cls' if os.name == 'nt' else 'clear')
@@ -179,7 +182,8 @@ Menu
         print("Please enter the filename of the e01:")
         filename =input()
 
-        if self.exists(filename,naam):
+        if os.path.exists(filename):
+            self.write_hash(filename,naam)
             return filename
 
 
@@ -187,7 +191,7 @@ Menu
     # asks for pcap file, this file will be used as input for the IP_script
     def input_pcap_file(self):
         file_list = []
-        dictionary = {}
+        IP_name="IP_hashes_"+str(date.today()) + ".txt"
         while True:
             amount = input('Input the ammount of .pcap files you want to filter: ')
             try:
@@ -209,7 +213,7 @@ Menu
                 if os.path.exists(user_input):
                     if user_input.endswith( '.pcap'):
                         if (os.path.abspath(user_input)) not in file_list:
-                            self.write_hash(user_input)
+                            self.write_hash(user_input, IP_name)
                             file_list.append(os.path.abspath(user_input))
                             break
                         elif (os.path.abspath(user_input)) in file_list:
@@ -232,7 +236,8 @@ Menu
                     compare_file =input("")
                     if os.path.exists(compare_file):
                         if compare_file.endswith(".txt") or compare_file.endswith(".TXT"):
-                            self.write_hash(compare_file)
+
+                            self.write_hash(compare_file,IP_name)
                             self.Logging().info("Opening file: "+ compare_file)
                             print(compare_file)
                             self.compare_file = compare_file
@@ -256,17 +261,9 @@ Menu
                 self.run()
             else:
                 print("That's not a valid input please enter either N/Y or C to cancel")
-
-        # self.IP.main()
         self.IP.main(file_list,self.compare_file,self.internet_access)
-        # output =self.IP.Filter_IP(file_list)
-        # print(output)
-        # dictionary.update(output)
-        # # IP_script.write(dictionary)
-        # output2=self.IP.compare(output)
-        # self.IP.timeline(output2)
-    #     need to find a solution for the limit of 4 request per minute.
 
+    # will be used to scan file hashes for malware.
     def virustotal_scanner(self):
         hash_dict= {}
 
@@ -303,9 +300,6 @@ Menu
             if self.internet_access:
                 response = vt.get_file_report(value)
                 print(response)
-                # if (response["results"]["verbose_msg"] =="The requested resource is not among the finished, queued or pending scans"):
-                #     vt.rescan_file(value)
-            # output = json.loads(response.text)
                 if  "positives" in response["results"]:
                     if (int(response["results"]["positives"]) > 4):
                         print( "Plausible virus detected in: " + key)
@@ -314,21 +308,8 @@ Menu
                 else:
                     continue
 
-
-            #     print(json.dumps(response, sort_keys=False,indent =4))
-            # print()
-
-    # will check if an file exists, but need to implement an option to re add the file if it doesn't exist
-    def exists(self,file,name):
-
-        if os.path.exists(file):
-
-            (self.write_hash(file))
-            return True
-        else:
-            return False
-
-    def write_hash(self,file, name = "hashes.txt"):
+    # Will be used to write the hash of a file to .txt file
+    def write_hash(self,file, name):
         path = os.path.join(sys.path[0],'hash', str(name))
         print ( path)
         with open(os.path.join(self.hash_location, name), 'a+') as f:
@@ -343,6 +324,3 @@ Menu
 #this function will run the main function when script is called
 if __name__ == "__main__":
     Main_program().run()
-# start menu here and call individual scripts
-#do something with logging
-#error handling
