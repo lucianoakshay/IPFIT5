@@ -121,6 +121,7 @@ class IP_filtering:
 
                 print("The following files have been created:" + self.ip_filename )
         elif output and self.compare_input is None:
+            self.write_IP(output,self.ip_filename)
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtered out IP-addresses")
             print("Created file:"+"\n"+self.ip_filename)
