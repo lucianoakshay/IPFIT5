@@ -31,10 +31,13 @@ class Main_program:
         temp_path =os.path.join(sys.path[0],"log")
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
-        temp_path = os.path.join(sys.path[0], "hash")
-        if not os.path.exists(temp_path):
-            os.makedirs(temp_path)
-        self.hash_location = os.path.join(sys.path[0],'hash')
+        self.hash_location = os.path.join(sys.path[0], "hash")
+        if not os.path.exists(self.hash_location):
+            os.makedirs(self.hash_location)
+        self.output_location = os.path.join(sys.path[0], "output")
+        if not os.path.exists(self.output_location):
+            os.makedirs(self.output_location)
+
         self.log_location = os.path.join(sys.path[0],'log','Main_log_'+str(date.today())+'.log')
 
 
@@ -191,7 +194,8 @@ Menu
     # asks for pcap file, this file will be used as input for the IP_script
     def input_pcap_file(self):
         file_list = []
-        IP_name="IP_hashes_"+str(date.today()) + ".txt"
+        hash_filename="IP_hashes_"+str(date.today()) + ".txt"
+
         while True:
             amount = input('Input the ammount of .pcap files you want to filter: ')
             try:
@@ -213,7 +217,7 @@ Menu
                 if os.path.exists(user_input):
                     if user_input.endswith( '.pcap'):
                         if (os.path.abspath(user_input)) not in file_list:
-                            self.write_hash(user_input, IP_name)
+                            self.write_hash(user_input, hash_filename)
                             file_list.append(os.path.abspath(user_input))
                             break
                         elif (os.path.abspath(user_input)) in file_list:
@@ -237,7 +241,7 @@ Menu
                     if os.path.exists(compare_file):
                         if compare_file.endswith(".txt") or compare_file.endswith(".TXT"):
 
-                            self.write_hash(compare_file,IP_name)
+                            self.write_hash(compare_file,hash_filename)
                             self.Logging().info("Opening file: "+ compare_file)
                             print(compare_file)
                             self.compare_file = compare_file
@@ -261,7 +265,7 @@ Menu
                 self.run()
             else:
                 print("That's not a valid input please enter either N/Y or C to cancel")
-        self.IP.main(file_list,self.compare_file,self.internet_access)
+        self.IP.main(file_list,self.compare_file,self.internet_access,self.output_location)
 
     # will be used to scan file hashes for malware.
     def virustotal_scanner(self):
