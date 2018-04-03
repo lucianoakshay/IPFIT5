@@ -92,7 +92,17 @@ class IP_filtering:
             995: 'POP3 /ssl'
         }
     # The main function that will be used to start the IP-script. needs 3 arguments, the location of the pcap files the location of the list with IP-addresses and a boolean value to check if there is internet access
-    def main(self,pcap_files,compare_file, internet):
+    def main(self,pcap_files,compare_file, internet,location):
+
+        self.whois_filename=os.path.join(location, 'Whois_info_' + str(date.today())+ ".csv")
+
+        # Will be used to set the filename for the IP-adresses
+        self.ip_filename=os.path.join(location,"IP_address_"+str(date.today())+".txt")
+
+        self.similarties_filename= os.path.join(location, "Similarities_"+ str(date.today())+ ".txt")
+
+        # Will be used to set the name of the timeline file
+        self.timeline_filename = os.path.join(location,"Time_line output"+ str(date.today())+  ".txt")
 
         self.Log = User_Interface.Main_program().Logging()
         self.pcap_files = pcap_files
