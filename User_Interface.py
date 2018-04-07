@@ -5,13 +5,11 @@ import sys
 import hashlib as hash
 import logging
 import opdracht_IP
-from time import sleep
 import opdracht_Gehakt
 from datetime import date
 import datetime
 from urllib.request import urlopen
 from urllib.error import URLError
-from virus_total_apis import PublicApi as virustotal
 from socket import timeout
 
 
@@ -20,26 +18,32 @@ class NotPositiveError(UserWarning):
 
 
 class Main_program:
+    # Is the buffersize for the hashing function.
     BUFFERSIZE = 65536
     p = None
-    API_KEY = '5d26b492516bef5706b162488776b1ac507accd713f2d9a7bd53727b46ecf20e'
 
     def __init__(self):
+        # will be used for the hashing function
         self.sha256hash = hash.sha256()
+        # will be used to check internet access
         self.internet_access = False
+        # will be used to instantiate the IP script
         self.IP = opdracht_IP.IP_filtering()
+        # This variable will be used to creat the log folder if it doesn't exist
         temp_path = os.path.join(sys.path[0], "log")
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
+        # This variable will be used to create the hash folder if it doesn't exist
         self.hash_location = os.path.join(sys.path[0], "hash")
         if not os.path.exists(self.hash_location):
             os.makedirs(self.hash_location)
+        # This variable will be used to create the output folder if it doesn't exist
         self.output_location = os.path.join(sys.path[0], "output")
         if not os.path.exists(self.output_location):
             os.makedirs(self.output_location)
-
+        # This variable will be used to set the log location
         self.log_location = os.path.join(sys.path[0], 'log', 'Main_log_' + str(date.today())+'.log')
-
+        # This variable will be used to set the compare file for the opdracht_IP script
         self.compare_file = None
 
         # will be used to set the choices in the main menu
@@ -47,8 +51,7 @@ class Main_program:
                 "1": self.IP_script,
                 "2": self.Foto_script,
                 "3": self.Gehakt_script,
-                "4": self.virustotal_scanner,
-                "5": self.quit
+                "4": self.quit
                 }
         # will be used to set the choices in the menu of the IP-script
         self.choices_ip = {
@@ -65,6 +68,7 @@ class Main_program:
             return True
         except URLError as err:
             self.internet_access = False
+            print(err)
             return False
         except timeout:
             self.internet_access = False
@@ -89,7 +93,7 @@ class Main_program:
         return logger
 
     # this function will calculate the sha256 hash of a file
-    def bereken_hash(self,file):
+    def bereken_hash(self, file):
         if os.path.isfile(file) and os.access(file, os.R_OK):
             with open(file, 'rb') as file:
                 file_buffer = file.read(self.BUFFERSIZE)
@@ -103,15 +107,14 @@ class Main_program:
     # function that will print out the menu to the screen
 
     def display_main_menu(self):
-        #Disabled for debugging purposes. Can be turned on again once development is finished.
-        #os.system('cls' if os.name == 'nt' else 'clear')
+        # Disabled for debugging purposes. Can be turned on again once development is finished.
+        os.system('cls' if os.name == 'nt' else 'clear')
         print("""
 Menu
 1. Run_IP_script
 2. Run_Foto_script
 3. Run_gehakt_script
-4. Preform virusscan (very slow)
-5. Quit
+4. Quit
 """)
         if not self.internet_on():
             self.Logging().warning("No internet access, virus scanning is"
@@ -184,7 +187,7 @@ Menu
         filename = input()
 
         if os.path.exists(filename):
-            self.write_hash(filename,naam)
+            self.write_hash(filename, naam)
             return filename
 
     # asks for pcap file, this file will be used as input for the IP_script
@@ -220,7 +223,7 @@ Menu
                             print("You added the same file twice, please add a different file:")
 
                     else:
-                        print( "File isn't a .pcap file")
+                        print("File isn't a .pcap file")
                 elif user_input == 'C':
                     print("Cancel. Restarting script")
                     self.run()
@@ -237,7 +240,7 @@ Menu
                     if os.path.exists(compare_file):
                         if compare_file.endswith(".txt") or compare_file.endswith(".TXT"):
 
-                            self.write_hash(compare_file,hash_filename)
+                            self.write_hash(compare_file, hash_filename)
                             self.Logging().info("Opening file: " + compare_file)
                             self.compare_file = compare_file
                             break
@@ -261,59 +264,6 @@ Menu
                 print("That's not a valid input please enter either N/Y or C to cancel")
         self.IP.main(file_list, self.compare_file, self.internet_access, self.output_location)
 
-    # will be used to scan file hashes for malware.
-    def virustotal_scanner(self):
-        hash_dict= {}
-        while True:
-            # will open the file hash location
-            print("Enter the location of the hash file you want to check?")
-            hash_location = input("")
-            if os.path.exists(hash_location):
-
-                with open (hash_location) as file:
-                    for line in file:
-                        key, value = line.split()
-                        if key in hash_dict:
-                            continue
-                        hash_dict[key] = value
-                time = float(len(hash_dict)*15)
-                hour = time // 3600
-                time %= 3600
-                minutes = time // 60
-                time %= 60
-                seconds = time
-                print("This will take: h:m:s-> %d:%d:%d" % (hour, minutes, seconds))
-                print("Do you want to continue ?(Y/N)")
-
-                while True:
-                    choice = input("")
-                    if  choice == "Y":
-                        break
-                    elif choice == "N":
-                        self.run()
-                    else:
-                        print("please enter either Y or N")
-                        continue
-                vt = virustotal(self.API_KEY)
-
-                for key,value in hash_dict.items():
-                    print("Uploading hash to virustotal")
-                    sleep(15)
-
-                    if self.internet_access:
-                        response = vt.get_file_report(value)
-                        print(response)
-                        if "positives" in response["results"]:
-                            if int(response["results"]["positives"]) > 4:
-                                print("Plausible virus detected in: " + key)
-                                print("Results are stored in:")
-
-                        else:
-                            continue
-            else:
-                print("Please enter a valid location")
-                continue
-
     # Will be used to write the hash of a file to .txt file
     def write_hash(self, file, name):
         path = os.path.join(sys.path[0], 'hash', str(name))
@@ -328,6 +278,6 @@ Menu
         sys.exit(0)
 
 
-#this function will run the main function when script is called
+# this function will run the main function when script is called
 if __name__ == "__main__":
     Main_program().run()
