@@ -5,6 +5,7 @@ import subprocess
 import mime_dictionary2 as mime_dictionary
 import magic
 import datetime
+import operator
 
 class gehakt:
 
@@ -16,13 +17,13 @@ class gehakt:
         file_dict = self.file_list(mounting_dir)
 
         # Magic function wordt aangeroepen om de file types te checken
-        wrong_files = self.magic_test(file_dict)
+        bad_files = self.magic_test(file_dict)
 
         # Log checker function wordt aangeroepen om logs te doorlopen
-        login_dict = self.log_checker()
+        bad_logins = self.log_checker()
 
         # Timeline function wordt aangeroepen om een timeline te maken
-
+        self.timeline_result(bad_files, bad_logins)
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -103,11 +104,15 @@ class gehakt:
 
 
     def log_checker(self):
-        failed_logins = {}
-        return failed_logins
+        bad_logins = {}
+        return bad_logins
 
 
-    def timeline_result(self):
+    def timeline_result(self, bad_files, bad_logins):
+        # Need to merge the two lists here
+        merged_list = bad_files
+        ordered_list = sorted(merged_list, key=operator.itemgetter(1))
+
         save_results = input("Do you want to save the results of the timeline to a file? (Yes/No)")
         if save_results == "Y" or save_results == "y" or save_results == "Yes" or save_results == "yes":
             print("Please specify some information")
@@ -117,6 +122,18 @@ class gehakt:
             examiner = input("Examiner: ")
             curr_datetime = datetime.datetime.today()
             save = True
+
+            # Creating the file and writing down header info
+            file = open(file_location + ".txt", "w")
+            file.write("Case Number: " + case_nr)
+            file.write("Evidence ID: " + evidence_id)
+            file.write("Examiner: " + examiner)
+            file.write("Recorded date: " + str(curr_datetime))
         else:
             save = False
 
+        # Looping through the list and printing everything
+        for item in ordered_list:
+            print(item[1], item[0])
+            if save:
+                file.write(item[1] + item[0])
