@@ -25,6 +25,11 @@ class gehakt:
         # Timeline function wordt aangeroepen om een timeline te maken
         self.timeline_result(bad_files, bad_logins)
 
+        # Last user input asked to quit or stay
+        final_input = input("Script finished, Q to to go back to main menu: ")
+        while final_input != "Q":
+            final_input = input("Script finished, Q to to go back to main menu or N for next item: ")
+
     #Function to mount e01 or dd images
     #E01 is not implemented yet
     def image_mount(self, given_dir):
@@ -126,9 +131,9 @@ class gehakt:
             # Creating the file and writing down header info
             file = open(file_location + ".txt", "w")
             file.write("Case Number: " + case_nr)
-            file.write("Evidence ID: " + evidence_id)
-            file.write("Examiner: " + examiner)
-            file.write("Recorded date: " + str(curr_datetime))
+            file.write("\nEvidence ID: " + evidence_id)
+            file.write("\nExaminer: " + examiner)
+            file.write("\nRecorded date: " + str(curr_datetime))
         else:
             save = False
 
@@ -136,7 +141,7 @@ class gehakt:
         for item in ordered_list:
             print(item[1], item[0])
             if save:
-                file.write(item[1] + item[0])
+                file.write("\n" + item[1] + item[0])
 
         # Closing file if it was open
         if save:
