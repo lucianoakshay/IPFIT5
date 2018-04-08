@@ -104,7 +104,7 @@ class gehakt:
 
 
     def log_checker(self):
-        bad_logins = {}
+        bad_logins = []
         return bad_logins
 
 
@@ -137,3 +137,7 @@ class gehakt:
             print(item[1], item[0])
             if save:
                 file.write(item[1] + item[0])
+
+        # Closing file if it was open
+        if save:
+            file.close()
