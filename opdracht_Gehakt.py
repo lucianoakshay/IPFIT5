@@ -108,7 +108,7 @@ class gehakt:
 
 
     def timeline_result(self):
-        save_results = input("Do you want to save the results of the timeline to a file?")
+        save_results = input("Do you want to save the results of the timeline to a file? (Yes/No)")
         if save_results == "Y" or save_results == "y" or save_results == "Yes" or save_results == "yes":
             print("Please specify some information")
             file_location = input("Please specify a saving location (without extension): ")
@@ -116,3 +116,7 @@ class gehakt:
             evidence_id = input("Evidence ID: ")
             examiner = input("Examiner: ")
             curr_datetime = datetime.datetime.today()
+            save = True
+        else:
+            save = False
+
