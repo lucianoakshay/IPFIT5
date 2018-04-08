@@ -9,9 +9,9 @@ import operator
 
 class gehakt:
 
-    def main_def(self, input):
+    def main_def(self, user_input):
         # Image mount wordt aangeroepen om de meegegeven image te mounten
-        mounting_dir = self.image_mount(input)
+        mounting_dir = self.image_mount(user_input)
 
         # File list wordt aangeroepen om een dictionary te maken van alle files op de image
         file_dict = self.file_list(mounting_dir)
