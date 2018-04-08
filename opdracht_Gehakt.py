@@ -14,9 +14,14 @@ class gehakt:
         # File list wordt aangeroepen om een dictionary te maken van alle files op de image
         file_dict = self.file_list(mounting_dir)
 
-        #Magic function wordt aangeroepen om de file types te checken
+        # Magic function wordt aangeroepen om de file types te checken
         wrong_files = self.magic_test(file_dict)
-        print(wrong_files)
+
+        # Log checker function wordt aangeroepen om logs te doorlopen
+        login_dict = self.log_checker()
+
+        # Timeline function wordt aangeroepen om een timeline te maken
+
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -69,7 +74,7 @@ class gehakt:
 
     def magic_test(self, file_dict):
         #List of bad files
-        bad_files = []
+        bad_files = {}
 
         print("Searching for bad files")
         User_Interface.Main_program().Logging().info("Searching for bad files")
@@ -83,7 +88,8 @@ class gehakt:
                 if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
                     continue
                 else:
-                    bad_files.append(file)
+                    mod_time = os.path.getmtime(file)
+                    bad_files[file] = mod_time
                     User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
             else:
                 User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
@@ -92,3 +98,12 @@ class gehakt:
         User_Interface.Main_program().Logging().info("Bad file search finished")
 
         return bad_files
+
+
+    def log_checker(self):
+        failed_logins = {}
+        return failed_logins
+
+
+    def timeline_result(self):
+        pass
