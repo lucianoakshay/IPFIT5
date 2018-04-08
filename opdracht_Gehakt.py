@@ -75,7 +75,7 @@ class gehakt:
 
     def magic_test(self, file_dict):
         #List of bad files
-        bad_files = {}
+        bad_files = []
 
         print("Searching for bad files")
         User_Interface.Main_program().Logging().info("Searching for bad files")
@@ -91,7 +91,7 @@ class gehakt:
                 else:
                     raw_time = os.path.getmtime(file)
                     mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
-                    bad_files[file] = mod_time
+                    bad_files.append([file, mod_time])
                     User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
             else:
                 User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
