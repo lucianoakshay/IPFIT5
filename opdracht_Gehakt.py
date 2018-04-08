@@ -26,9 +26,9 @@ class gehakt:
         self.timeline_result(bad_files, bad_logins)
 
         # Last user input asked to quit or stay
-        final_input = input("Script finished, Q to to go back to main menu: ")
+        final_input = input("\nScript finished, Q to to go back to main menu: ")
         while final_input != "Q":
-            final_input = input("Script finished, Q to to go back to main menu or N for next item: ")
+            final_input = input("Script finished, Q to to go back to main menu: ")
 
     #Function to mount e01 or dd images
     #E01 is not implemented yet
@@ -133,11 +133,12 @@ class gehakt:
             file.write("Case Number: " + case_nr)
             file.write("\nEvidence ID: " + evidence_id)
             file.write("\nExaminer: " + examiner)
-            file.write("\nRecorded date: " + str(curr_datetime))
+            file.write("\nRecorded date: " + str(curr_datetime) + "\n")
         else:
             save = False
 
         # Looping through the list and printing everything
+        print()
         for item in ordered_list:
             print(item[1], item[0])
             if save:
