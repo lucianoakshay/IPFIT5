@@ -4,7 +4,7 @@ from tqdm import tqdm
 import subprocess
 import mime_dictionary2 as mime_dictionary
 import magic
-from datetime import datetime
+import datetime
 
 class gehakt:
 
@@ -90,7 +90,7 @@ class gehakt:
                     continue
                 else:
                     raw_time = os.path.getmtime(file)
-                    mod_time = datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
+                    mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
                     bad_files[file] = mod_time
                     User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
             else:
