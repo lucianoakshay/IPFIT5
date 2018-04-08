@@ -117,8 +117,7 @@ Menu
 4. Quit
 """)
         if not self.internet_on():
-            self.Logging().warning("No internet access, virus scanning is"
-                                   " disabled. Also reduced functionality of the IP script")
+            self.Logging().warning("No internet access,functionality of the IP script will be reduced")
             print("#"*48)
             print("# Warning no internet access.                  #")
             print("# IP_script will not be able to get WHOIS info #")
@@ -151,7 +150,6 @@ Menu
     def IP_script(self):
 
         self.Logging().info("Starting IP_script")
-        # import opdracht_IP
         while True:
             self.display_IP_menu()
             choice = input("Enter an option: ")
