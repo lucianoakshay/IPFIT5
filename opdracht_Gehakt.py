@@ -92,7 +92,7 @@ class gehakt:
                 continue
             try:
                 curr_magic = magic.from_file(file, mime=True)
-            except (PermissionError, FileNotFoundError):
+            except (PermissionError, FileNotFoundError, OSError):
                 User_Interface.Main_program().Logging().info(
                     "File with filepath: '" + file + "' encountered a problem while checking")
                 continue
