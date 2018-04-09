@@ -83,15 +83,18 @@ class gehakt:
         #List of bad files
         bad_files = []
 
-        # Ask if only wants to search in home folder
-        home_folder = input("Do you want to limit search to the home folder of the image (Yes/No): ")
+        # Ask if only wants to search in specific folder
+        print("Bad file search can result in a lot of false positives because of various system files.")
+        spec_folder = input("Do you want to limit bad file search to a folder on the image (Yes/No): ")
+        if spec_folder == "Y" or spec_folder == "y" or spec_folder == "Yes" or spec_folder == "yes":
+            folder = input("Please specify the path to this folder: ")
 
         print("Searching for bad files")
         User_Interface.Main_program().Logging().info("Searching for bad files")
 
-        if home_folder == "Y" or home_folder == "y" or home_folder == "Yes" or home_folder == "yes":
+        if spec_folder == "Y" or spec_folder == "y" or spec_folder == "Yes" or spec_folder == "yes":
             for file in tqdm(file_dict, total=len(file_dict), unit="files"):
-                if "home" in file:
+                if str(folder) in file:
                     if "~$" in file:
                         User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
                         continue
@@ -176,7 +179,7 @@ class gehakt:
         for item in ordered_list:
             print(item[1], item[0])
             if save:
-                file.write("\n" + item[1] + item[0])
+                file.write("\n" + item[1] + " " + item[0])
 
         # Closing file if it was open
         if save:
