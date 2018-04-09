@@ -83,29 +83,58 @@ class gehakt:
         #List of bad files
         bad_files = []
 
+        # Ask if only wants to search in home folder
+        home_folder = input("Do you want to limit search to the home folder of the image (Yes/No): ")
+
         print("Searching for bad files")
         User_Interface.Main_program().Logging().info("Searching for bad files")
 
-        for file in tqdm(file_dict, total=len(file_dict), unit="files checked"):
-            if "~$" in file:
-                User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
-                continue
-            try:
-                curr_magic = magic.from_file(file, mime=True)
-            except (PermissionError, FileNotFoundError, OSError):
-                User_Interface.Main_program().Logging().info(
-                    "File with filepath: '" + file + "' encountered a problem while checking")
-                continue
-            if file_dict[file]["Extension"] in mime_dictionary.dic:
-                if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
+        if home_folder == "Y" or home_folder == "y" or home_folder == "Yes" or home_folder == "yes":
+            for file in tqdm(file_dict, total=len(file_dict), unit="files"):
+                if "home" in file:
+                    if "~$" in file:
+                        User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
+                        continue
+                    try:
+                        curr_magic = magic.from_file(file, mime=True)
+                    except (PermissionError, FileNotFoundError, OSError):
+                        User_Interface.Main_program().Logging().info(
+                            "File with filepath: '" + file + "' encountered a problem while checking")
+                        continue
+                    if file_dict[file]["Extension"] in mime_dictionary.dic:
+                        if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
+                            continue
+                        else:
+                            raw_time = os.path.getmtime(file)
+                            mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
+                            bad_files.append([file, mod_time])
+                            User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
+                    else:
+                        User_Interface.Main_program().Logging().info(
+                            "File with filepath: '" + file + "' not found in mime dictionary")
+        else:
+            for file in tqdm(file_dict, total=len(file_dict), unit="files"):
+                if "~$" in file:
+                    User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
                     continue
+                try:
+                    curr_magic = magic.from_file(file, mime=True)
+                except (PermissionError, FileNotFoundError, OSError):
+                    User_Interface.Main_program().Logging().info(
+                        "File with filepath: '" + file + "' encountered a problem while checking")
+                    continue
+                if file_dict[file]["Extension"] in mime_dictionary.dic:
+                    if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
+                        continue
+                    else:
+                        raw_time = os.path.getmtime(file)
+                        mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
+                        bad_files.append([file, mod_time])
+                        User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
                 else:
-                    raw_time = os.path.getmtime(file)
-                    mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
-                    bad_files.append([file, mod_time])
-                    User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
-            else:
-                User_Interface.Main_program().Logging().info("File with filepath: '" + file + "' not found in mime dictionary")
+                    User_Interface.Main_program().Logging().info(
+                        "File with filepath: '" + file + "' not found in mime dictionary")
+
 
         print("Bad file search finished")
         User_Interface.Main_program().Logging().info("Bad file search finished")
