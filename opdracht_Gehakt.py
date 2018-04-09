@@ -90,7 +90,10 @@ class gehakt:
             if "~$" in file:
                 User_Interface.Main_program().Logging().info("Not able to read file in '" + file + "'")
                 continue
-            curr_magic = magic.from_file(file, mime=True)
+            try:
+                curr_magic = magic.from_file(file, mime=True)
+            except PermissionError:
+                continue
             if file_dict[file]["Extension"] in mime_dictionary.dic:
                 if curr_magic in mime_dictionary.dic[file_dict[file]["Extension"]]:
                     continue
