@@ -120,6 +120,7 @@ class gehakt:
                         else:
                             raw_time = os.path.getmtime(file)
                             mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
+                            print(type(mod_time))
                             bad_files.append([file, mod_time])
                             User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
                     else:
@@ -172,7 +173,7 @@ class gehakt:
                 elif file_check.from_file(filepath) in gzip_types:
                     bad_logins = self.gzip_checker(bad_logins, filepath)
                 else:
-                    print("Not a log file found at: " + filepath)
+                    User_Interface.Main_program().Logging().info("Not a log file found at: " + filepath)
                     continue
             except (PermissionError, FileNotFoundError, OSError):
                 continue
