@@ -214,7 +214,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, str(currdate_time)])
+                    bad_logins.append([str(line), str(currdate_time)])
             else:
                 if re.match("((.*)fail(ed)?(.*)login(s)?(.*)|(.*)login(s)?(.*)fail(ed)?(.*))", str(line),
                             re.IGNORECASE):
@@ -224,7 +224,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, str(currdate_time)])
+                    bad_logins.append([str(line), str(currdate_time)])
         return bad_logins
 
     # End of logchecker def's
