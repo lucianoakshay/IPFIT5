@@ -34,7 +34,7 @@ class gehakt:
 
         # Timeline function wordt aangeroepen om een timeline te maken
         self.timeline_result(bad_files, bad_logins)
-        
+
         # Unmounting the evidence
         print("Unmounting image")
         User_Interface.Main_program().Logging().info("Unmounting image")
