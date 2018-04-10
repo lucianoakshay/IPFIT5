@@ -6,6 +6,9 @@ import mime_dictionary2 as mime_dictionary
 import magic
 import datetime
 import operator
+import re
+from dateutil import parser
+import gzip
 
 class gehakt:
 
@@ -20,7 +23,14 @@ class gehakt:
         bad_files = self.magic_test(file_dict)
 
         # Log checker function wordt aangeroepen om logs te doorlopen
-        bad_logins = self.log_checker()
+        log_dir = input("Logs are stored at: '" + mounting_dir + "/var/log'. Is this correct? (Yes/No) ")
+        if log_dir == "Y" or log_dir == "y" or log_dir == "Yes" or log_dir == "yes":
+            log_dir = mounting_dir + "/var/log"
+        else:
+            log_dir = input("Give the location of the log files: ")
+        while os.path.isdir(log_dir) == False:
+            log_dir = input("Give the location of the log files: ")
+        bad_logins = self.log_checker(log_dir)
 
         # Timeline function wordt aangeroepen om een timeline te maken
         self.timeline_result(bad_files, bad_logins)
@@ -144,11 +154,78 @@ class gehakt:
 
         return bad_files
 
+    # Begin of logchecker def's
 
-    def log_checker(self):
+    def log_checker(self, log_dir):
+        # Mime types of gzip files and file check object
+        file_check = magic.Magic(mime=True)
+        gzip_types = [
+            "application/x-gzip",
+            "application/gzip"
+        ]
+
         bad_logins = []
+        for filepath in self.walkdir(log_dir):
+            absolute_path, extension = os.path.splitext(filepath)
+            if "text" in file_check.from_file(filepath):
+                bad_logins = self.textfile_checker(bad_logins, filepath)
+            elif file_check.from_file(filepath) in gzip_types:
+                bad_logins = self.gzip_checker(bad_logins, filepath)
+            else:
+                print("Not a log file found at: " + filepath)
+                continue
         return bad_logins
 
+    def textfile_checker(self, bad_logins, filepath):
+        open_file = open(filepath, "r")
+        read_file = open_file.readlines()
+        for line in read_file:
+            if "auth" in filepath:
+                if re.match("((.*)failed(.*)password(.*)|(.*)password(.*)failed(.*))", line, re.IGNORECASE):
+                    raw = os.path.getmtime(filepath)
+                    read_time = datetime.datetime.fromtimestamp(raw).strftime('%Y-%m-%d %H:%M:%S')
+                    dy = int(read_time[:4])
+                    dm = int(read_time[5:7])
+                    dd = int(read_time[8:10])
+                    currdate_time = parser.parse(line[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
+                    bad_logins.append([line, currdate_time])
+            else:
+                if re.match("((.*)fail(ed)?(.*)login(s)?(.*)|(.*)login(s)?(.*)fail(ed)?(.*))", line, re.IGNORECASE):
+                    raw = os.path.getmtime(filepath)
+                    read_time = datetime.datetime.fromtimestamp(raw).strftime('%Y-%m-%d %H:%M:%S')
+                    dy = int(read_time[:4])
+                    dm = int(read_time[5:7])
+                    dd = int(read_time[8:10])
+                    currdate_time = parser.parse(line[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
+                    bad_logins.append([line, currdate_time])
+        return bad_logins
+
+    def gzip_checker(self, bad_logins, filepath):
+        open_file = gzip.open(filepath, "r")
+        read_file = open_file.readlines()
+        for line in read_file:
+            if "auth" in filepath:
+                if re.match("((.*)failed(.*)password(.*)|(.*)password(.*)failed(.*))", str(line), re.IGNORECASE):
+                    raw = os.path.getmtime(filepath)
+                    read_time = datetime.datetime.fromtimestamp(raw).strftime('%Y-%m-%d %H:%M:%S')
+                    dy = int(read_time[:4])
+                    dm = int(read_time[5:7])
+                    dd = int(read_time[8:10])
+                    currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
+                    bad_logins.append([line, currdate_time])
+            else:
+                if re.match("((.*)fail(ed)?(.*)login(s)?(.*)|(.*)login(s)?(.*)fail(ed)?(.*))", str(line),
+                            re.IGNORECASE):
+                    raw = os.path.getmtime(filepath)
+                    read_time = datetime.datetime.fromtimestamp(raw).strftime('%Y-%m-%d %H:%M:%S')
+                    dy = int(read_time[:4])
+                    dm = int(read_time[5:7])
+                    dd = int(read_time[8:10])
+                    currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
+                    bad_logins.append([line, currdate_time])
+        return bad_logins
+
+    # End of logchecker def's
 
     def timeline_result(self, bad_files, bad_logins):
         # Need to merge the two lists here
