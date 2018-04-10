@@ -166,13 +166,15 @@ class gehakt:
 
         bad_logins = []
         for filepath in self.walkdir(log_dir):
-            absolute_path, extension = os.path.splitext(filepath)
-            if "text" in file_check.from_file(filepath):
-                bad_logins = self.textfile_checker(bad_logins, filepath)
-            elif file_check.from_file(filepath) in gzip_types:
-                bad_logins = self.gzip_checker(bad_logins, filepath)
-            else:
-                print("Not a log file found at: " + filepath)
+            try:
+                if "text" in file_check.from_file(filepath):
+                    bad_logins = self.textfile_checker(bad_logins, filepath)
+                elif file_check.from_file(filepath) in gzip_types:
+                    bad_logins = self.gzip_checker(bad_logins, filepath)
+                else:
+                    print("Not a log file found at: " + filepath)
+                    continue
+            except (PermissionError, FileNotFoundError, OSError):
                 continue
         return bad_logins
 
