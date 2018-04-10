@@ -229,7 +229,7 @@ class gehakt:
 
     def timeline_result(self, bad_files, bad_logins):
         # Need to merge the two lists here
-        merged_list = bad_files
+        merged_list = bad_files + bad_logins
         ordered_list = sorted(merged_list, key=operator.itemgetter(1))
 
         save_results = input("Do you want to save the results of the timeline to a file? (Yes/No)")
