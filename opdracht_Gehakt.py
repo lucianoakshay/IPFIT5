@@ -120,7 +120,6 @@ class gehakt:
                         else:
                             raw_time = os.path.getmtime(file)
                             mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
-                            print(type(mod_time))
                             bad_files.append([file, mod_time])
                             User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
                     else:
@@ -191,7 +190,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(line[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, currdate_time])
+                    bad_logins.append([line, str(currdate_time)])
             else:
                 if re.match("((.*)fail(ed)?(.*)login(s)?(.*)|(.*)login(s)?(.*)fail(ed)?(.*))", line, re.IGNORECASE):
                     raw = os.path.getmtime(filepath)
@@ -200,7 +199,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(line[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, currdate_time])
+                    bad_logins.append([line, str(currdate_time)])
         return bad_logins
 
     def gzip_checker(self, bad_logins, filepath):
@@ -215,7 +214,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, currdate_time])
+                    bad_logins.append([line, str(currdate_time)])
             else:
                 if re.match("((.*)fail(ed)?(.*)login(s)?(.*)|(.*)login(s)?(.*)fail(ed)?(.*))", str(line),
                             re.IGNORECASE):
@@ -225,7 +224,7 @@ class gehakt:
                     dm = int(read_time[5:7])
                     dd = int(read_time[8:10])
                     currdate_time = parser.parse(str(line)[:30], fuzzy=True, default=datetime.datetime(dy, dm, dd))
-                    bad_logins.append([line, currdate_time])
+                    bad_logins.append([line, str(currdate_time)])
         return bad_logins
 
     # End of logchecker def's
