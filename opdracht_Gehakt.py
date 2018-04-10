@@ -34,6 +34,11 @@ class gehakt:
 
         # Timeline function wordt aangeroepen om een timeline te maken
         self.timeline_result(bad_files, bad_logins)
+        
+        # Unmounting the evidence
+        print("Unmounting image")
+        User_Interface.Main_program().Logging().info("Unmounting image")
+        subprocess.call(["sudo", "umount", mounting_dir])
 
         # Last user input asked to quit or stay
         final_input = input("\nScript finished, Q to to go back to main menu: ")
@@ -157,6 +162,7 @@ class gehakt:
     # Begin of logchecker def's
 
     def log_checker(self, log_dir):
+        print("Checking for failed logins in log files")
         # Mime types of gzip files and file check object
         file_check = magic.Magic(mime=True)
         gzip_types = [
@@ -175,7 +181,10 @@ class gehakt:
                     User_Interface.Main_program().Logging().info("Not a log file found at: " + filepath)
                     continue
             except (PermissionError, FileNotFoundError, OSError):
+                User_Interface.Main_program().Logging().info("Error encountered in log check with path: " + filepath)
                 continue
+        print("Bad log checking done")
+        User_Interface.Main_program().Logging().info("Bad log checking done")
         return bad_logins
 
     def textfile_checker(self, bad_logins, filepath):
