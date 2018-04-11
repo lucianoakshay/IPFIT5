@@ -23,7 +23,7 @@ class gehakt:
         bad_files = self.magic_test(file_dict)
 
         # Log checker function wordt aangeroepen om logs te doorlopen
-        check_logs = input("Do you want to check log files for failed logins?")
+        check_logs = input("Do you want to check log files for failed logins? (Yes/No)")
         if check_logs == "Y" or check_logs == "y" or check_logs == "Yes" or check_logs == "yes":
             log_dir = input("Logs are stored at: '" + mounting_dir + "/var/log'. Is this correct? (Yes/No) ")
             if log_dir == "Y" or log_dir == "y" or log_dir == "Yes" or log_dir == "yes":
