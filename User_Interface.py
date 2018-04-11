@@ -174,8 +174,8 @@ Menu
         self.Logging().info("Starting Foto_Script")
         self.foto.main(self.log_location)
         print("This is the Foto_script that's now running")
-    # WIll start gehakt script
 
+    # Will start gehakt script
     def Gehakt_script(self):
         self.Logging().info("Starting Gehakt_Script")
         gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
@@ -184,16 +184,6 @@ Menu
             print(gehakt_image + " is of type: " + file_extension + ". Please try again")
             gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
         opdracht_Gehakt.gehakt.main_def(opdracht_Gehakt.gehakt(), gehakt_image)
-
-    # will be used in the future to ask for input of the e01 file
-    def input_e01_file(self):
-        naam = "test"
-        print("Please enter the filename of the e01:")
-        filename = input()
-
-        if os.path.exists(filename):
-            self.write_hash(filename, naam)
-            return filename
 
     # asks for pcap file, this file will be used as input for the IP_script
     def input_pcap_file(self):
@@ -279,7 +269,6 @@ Menu
     # Will be used to write the hash of a file to .txt file
     def write_hash(self, file, name):
         path = os.path.join(sys.path[0], 'hash', str(name))
-        print(path)
         with open(os.path.join(self.hash_location, name), 'a+') as f:
             f.write("{:20}{:20}{:20}\n".format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), file, self.bereken_hash(file)))
 
