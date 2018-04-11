@@ -129,7 +129,7 @@ class gehakt:
                         else:
                             raw_time = os.path.getmtime(file)
                             mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
-                            bad_files.append([file, mod_time])
+                            bad_files.append([file, mod_time, file_dict[file]["Hash value"]])
                             User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
                     else:
                         User_Interface.Main_program().Logging().info(
@@ -151,7 +151,7 @@ class gehakt:
                     else:
                         raw_time = os.path.getmtime(file)
                         mod_time = datetime.datetime.fromtimestamp(raw_time).strftime('%Y-%m-%d %H:%M:%S')
-                        bad_files.append([file, mod_time])
+                        bad_files.append([file, mod_time, file_dict[file]["Hash value"]])
                         User_Interface.Main_program().Logging().info("Bad file found in '" + file + "'")
                 else:
                     User_Interface.Main_program().Logging().info(
@@ -269,9 +269,14 @@ class gehakt:
         # Looping through the list and printing everything
         print()
         for item in ordered_list:
-            print(item[1], item[0])
-            if save:
-                file.write("\n" + item[1] + " " + item[0])
+            if len(item) > 2:
+                print(item[1], item[0], item[2])
+                if save:
+                    file.write("\n" + item[1] + " " + item[0] + " Hash value: " + item[2])
+            else:
+                print(item[1], item[0])
+                if save:
+                    file.write("\n" + item[1] + " " + item[0])
 
         # Closing file if it was open
         if save:
