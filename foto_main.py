@@ -9,9 +9,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from io import BytesIO
 import fleep
 from collections import defaultdict
-import table
-import mapplot
-import tqdm
+import opdracht_foto
 
 class EWFImgInfo(pytsk3.Img_Info):
         def __init__(self, ewf_handle):
@@ -30,19 +28,7 @@ class EWFImgInfo(pytsk3.Img_Info):
             return self._ewf_handle.get_media_size()
 
 
-        def read_file(fs_object):
-            offset = 0
-            try:
-                size = getattr(fs_object.info.meta, "size", 0)
-
-                bestand = fs_object.read_random(offset, size)
-                #print(fs_object.info.name.name.decode('UTF-8'))
-                EWFImgInfo.exifinformatie(fs_object)
-            except Exception as ex:
-                print("fout1")
-                print(ex)
-
-        def hash_file(fs_object):
+        def open_file(fs_object):
 
             offset = 0
             buff_size = 1024 * 1024
@@ -59,95 +45,10 @@ class EWFImgInfo(pytsk3.Img_Info):
                 available_to_read = min(buff_size, size - offset)
                 data = fs_object.read_random(offset, available_to_read)
                 return data
-                #return EWFImgInfo.exifinformati(naam, data)
-            #    if naam == "20170829_154658.jpg":
-            #        image = Image.open(BytesIO(data))
-            #        info = image._getexif()
-            #        if info:
-            #            for tag, value in info.items():
-            #                decoded = TAGS.get(tag, tag)
-            #                print(decoded)
 
-                    #print(data)
                 if not data:
                     break
                 offset += len(data)
-        #        sha256_sum.update(data)
-
-
-
-        def mounten(filepath):
-
-            filenames = pyewf.glob(filepath)
-
-            ewf_handle = pyewf.handle()
-            ewf_handle.open(filenames)
-
-            img_info = EWFImgInfo(ewf_handle)
-            vol = pytsk3.Volume_Info(img_info)
-            for part in vol:
-                    if part.len > 2048:
-
-                        fs = pytsk3.FS_Info(img_info, offset=part.start * vol.info.block_size)
-
-                        root = fs.open_dir(path="/")
-
-                        myListName = []
-                        myListSize = []
-                        fileinfo = []
-                        hashwaarde = []
-                        count = []
-                        cijfer = 0
-                        myCijfer = []
-                        for fs_object in root:
-                                try:
-                                    #EWFImgInfo.read_file(fs_object)
-                            #        EWFImgInfo.read_file(fs_object)
-                            #        EWFImgInfo.hash_file(fs_object)
-                                    file_size = getattr(fs_object.info.meta, "size", 0)
-                                    file_name = fs_object.info.name.name.decode('UTF-8')
-
-                                    myListName.append(file_name)
-                                    myListSize.append(file_size)
-                                    cijfer = cijfer + 1
-                                    myCijfer.append(cijfer)
-
-                                    hash_obj = hashlib.sha256()
-                                    if hash_obj is "Error":
-                                        hashwaarde.append("-")
-
-                                    else:
-
-                                        hash_obj.update(fs_object.read_random(0, file_size))
-
-#                                        exifinformatie(fs_object.read_random(0, file_size))
-                                        hash_w = hash_obj.hexdigest()
-                                        hashwaarde.append(hash_w)
-
-                                except Exception as ex:
-                                    print (ex)
-                                    hashwaarde.append("-")
-
-
-            tab = tt.Texttable()
-            tab.set_cols_dtype(['a', 'a', 't', 'a'])
-            tab.set_cols_width([25,15,65,6])
-
-            headings = ['Bestandsnaam', 'Bestandsgrootte', 'SHA256', 'Nummer']
-            tab.header(headings)
-            names = myListName
-            size = myListSize
-            hashw = hashwaarde
-            nummer = myCijfer
-
-            for row in zip(names, size, hashw, nummer):
-                tab.add_row(row)
-
-            s = tab.draw()
-            print (s)
-
-            return None
-
 
         def exif_type(data):
                 image = Image.open(BytesIO(data))
@@ -167,7 +68,37 @@ class EWFImgInfo(pytsk3.Img_Info):
                         if decoded == "Make":
                             return value
 
-        def hashes(filepath):
+        def exif_datum(data):
+                image = Image.open(BytesIO(data))
+                info = image._getexif()
+                if info:
+                    for tag, value in info.items():
+                        decoded = TAGS.get(tag, tag)
+                        if decoded == "DateTimeOriginal":
+                            return value
+
+        def leaders(xs, top=10):
+            counts = defaultdict(int)
+            for x in xs:
+                counts[x] += 1
+            return sorted(counts.items(), reverse=True, key=lambda tup: tup[1])[:top]
+
+        def checkcamera(bestand):
+            info = fleep.get(bestand)
+            return info.type_matches("raster-image")
+
+        def remove_duplicates(values):
+            output = []
+            seen = set()
+            for value in values:
+                # If value has not been encountered yet,
+                # ... add it to both list and set.
+                if value not in seen:
+                    output.append(value)
+                    seen.add(value)
+            return output
+
+        def allfiles(filepath):
 
             filenames = pyewf.glob(filepath)
 
@@ -194,8 +125,8 @@ class EWFImgInfo(pytsk3.Img_Info):
                                 try:
                                     #EWFImgInfo.read_file(fs_object)
                             #        EWFImgInfo.read_file(fs_object)
-                            #        EWFImgInfo.hash_file(fs_object)
-                            #        EWFImgInfo.exifinfo2(EWFImgInfo.hash_file(fs_object))
+                            #        EWFImgInfo.open_file(fs_object)
+                            #        EWFImgInfo.exifinfo2(EWFImgInfo.open_file(fs_object))
                                     file_size = getattr(fs_object.info.meta, "size", 0)
                                     file_name = fs_object.info.name.name.decode('UTF-8')
 
@@ -214,7 +145,6 @@ class EWFImgInfo(pytsk3.Img_Info):
                                         hash_obj_md5.update(fs_object.read_random(0, file_size))
                                         hash_obj_sha256.update(fs_object.read_random(0, file_size))
 
-#                                        exifinformatie(fs_object.read_random(0, file_size))
                                         hash_w = hash_obj_sha256.hexdigest()
                                         hashwaarde.append(hash_w)
 
@@ -272,7 +202,7 @@ class EWFImgInfo(pytsk3.Img_Info):
                         myCijfer = []
                         for fs_object in root:
                                 try:
-                                    if EWFImgInfo.checkcamera(EWFImgInfo.hash_file(fs_object)):
+                                    if EWFImgInfo.checkcamera(EWFImgInfo.open_file(fs_object)):
                                         file_size = getattr(fs_object.info.meta, "size", 0)
                                         file_name = fs_object.info.name.name.decode('UTF-8')
 
@@ -291,7 +221,6 @@ class EWFImgInfo(pytsk3.Img_Info):
                                             hash_obj_md5.update(fs_object.read_random(0, file_size))
                                             hash_obj_sha256.update(fs_object.read_random(0, file_size))
 
-    #                                        exifinformatie(fs_object.read_random(0, file_size))
                                             hash_w = hash_obj_sha256.hexdigest()
                                             hashwaarde.append(hash_w)
 
@@ -346,9 +275,9 @@ class EWFImgInfo(pytsk3.Img_Info):
                         for fs_object in root:
                                 try:
                                     #print(fs_object.info.name.name.decode('UTF-8'))
-                                    if EWFImgInfo.checkcamera(EWFImgInfo.hash_file(fs_object)):
-                                        myType.append(EWFImgInfo.exif_type(EWFImgInfo.hash_file(fs_object)))
-                                        myMerk.append(EWFImgInfo.exif_merk(EWFImgInfo.hash_file(fs_object)))
+                                    if EWFImgInfo.checkcamera(EWFImgInfo.open_file(fs_object)):
+                                        myType.append(EWFImgInfo.exif_type(EWFImgInfo.open_file(fs_object)))
+                                        myMerk.append(EWFImgInfo.exif_merk(EWFImgInfo.open_file(fs_object)))
 
                                 except Exception as ex:
                                     if str(ex) != "object type must be bytes":
@@ -361,7 +290,6 @@ class EWFImgInfo(pytsk3.Img_Info):
 
             tab = tt.Texttable()
             tab.set_cols_dtype(['a', 'a'])
-    #        tab.set_cols_width([25,15,65,4,10,10])
 
             headings = ['Merk', 'Model/type']
             tab.header(headings)
@@ -376,7 +304,6 @@ class EWFImgInfo(pytsk3.Img_Info):
 
             tab2 = tt.Texttable()
             tab2.set_cols_dtype(['a'])
-    #        tab.set_cols_width([25,15,65,4,10,10])
 
             headings2 = ['Merk  |  Aantal']
             tab2.header(headings2)
@@ -390,7 +317,6 @@ class EWFImgInfo(pytsk3.Img_Info):
 
             tab3 = tt.Texttable()
             tab3.set_cols_dtype(['a'])
-    #        tab.set_cols_width([25,15,65,4,10,10])
 
             headings3 = ['Type  |  Aantal']
             tab3.header(headings3)
@@ -431,10 +357,10 @@ class EWFImgInfo(pytsk3.Img_Info):
                             try:
                                 cijfer = cijfer + 1
                                 myCijfer.append(cijfer)
-                                if EWFImgInfo.checkcamera(EWFImgInfo.hash_file(fs_object)):
+                                if EWFImgInfo.checkcamera(EWFImgInfo.open_file(fs_object)):
                                     myFilenames.append(fs_object.info.name.name.decode('UTF-8'))
-                                    myModellen.append(EWFImgInfo.exif_type(EWFImgInfo.hash_file(fs_object)))
-                                    myMerk.append(EWFImgInfo.exif_merk(EWFImgInfo.hash_file(fs_object)))
+                                    myModellen.append(EWFImgInfo.exif_type(EWFImgInfo.open_file(fs_object)))
+                                    myMerk.append(EWFImgInfo.exif_merk(EWFImgInfo.open_file(fs_object)))
 
                             except Exception as ex:
                                 if str(ex) != "object type must be bytes":
@@ -490,17 +416,17 @@ class EWFImgInfo(pytsk3.Img_Info):
                         for fs_object in root:
                             try:
 
-                                if EWFImgInfo.checkcamera(EWFImgInfo.hash_file(fs_object)):
-                                    files.append(EWFImgInfo.hash_file(fs_object))
+                                if EWFImgInfo.checkcamera(EWFImgInfo.open_file(fs_object)):
+                                    files.append(EWFImgInfo.open_file(fs_object))
                                     myFilenames.append(fs_object.info.name.name.decode('UTF-8'))
 
                             except Exception as ex:
                                 pass
-            mapplot.moremapplotter(files)
+            opdracht_foto.moremapplotter(files)
 
             for x in files:
-                myLat.append(mapplot.get_lat_from_imagefile(x))
-                myLon.append(mapplot.get_lon_from_imagefile(x))
+                myLat.append(opdracht_foto.get_lat_from_imagefile(x))
+                myLon.append(opdracht_foto.get_lon_from_imagefile(x))
 
             tab = tt.Texttable()
             tab.set_cols_dtype(['a', 'f', 'f'])
@@ -516,27 +442,60 @@ class EWFImgInfo(pytsk3.Img_Info):
             #
             s = tab.draw()
             print (s)
-            print("\n Map is geexporteerd in de huidige map als 'Export_Map.html'")
+            print("\n A world-map with all the locations is exported to: 'Export_Map.html'")
 
             return None
 
-        def leaders(xs, top=10):
-            counts = defaultdict(int)
-            for x in xs:
-                counts[x] += 1
-            return sorted(counts.items(), reverse=True, key=lambda tup: tup[1])[:top]
+        def exifinformatie(filepath):
 
-        def checkcamera(bestand):
-            info = fleep.get(bestand)
-            return info.type_matches("raster-image")
+            filenames = pyewf.glob(filepath)
 
-        def remove_duplicates(values):
-            output = []
-            seen = set()
-            for value in values:
-                # If value has not been encountered yet,
-                # ... add it to both list and set.
-                if value not in seen:
-                    output.append(value)
-                    seen.add(value)
-            return output
+            ewf_handle = pyewf.handle()
+            ewf_handle.open(filenames)
+
+            img_info = EWFImgInfo(ewf_handle)
+            vol = pytsk3.Volume_Info(img_info)
+            for part in vol:
+                    if part.len > 2048:
+
+                        fs = pytsk3.FS_Info(img_info, offset=part.start * vol.info.block_size)
+
+                        root = fs.open_dir(path="/")
+
+                        cijfer = 0
+                        myCijfer = []
+                        myFilenames = []
+                        myDatum = []
+
+
+                        for fs_object in root:
+                            try:
+                                cijfer = cijfer + 1
+                                myCijfer.append(cijfer)
+                                if EWFImgInfo.checkcamera(EWFImgInfo.open_file(fs_object)):
+                                    myFilenames.append(fs_object.info.name.name.decode('UTF-8'))
+                                    myDatum.append(EWFImgInfo.exif_datum(EWFImgInfo.open_file(fs_object)))
+
+                            except Exception as ex:
+                                if str(ex) != "object type must be bytes":
+                                    myDatum.append("Onbekend")
+                                else:
+                                    pass
+
+            tab = tt.Texttable()
+            tab.set_cols_dtype(['a', 'a', 'a'])
+
+            headings = ['Bestandsnaam', 'Datum en Tijd', 'NR.']
+            tab.header(headings)
+            names = myFilenames
+            datum = myDatum
+            nummer = myCijfer
+
+
+            for row in zip(names, datum, nummer):
+                tab.add_row(row)
+
+            s = tab.draw()
+            print (s)
+
+            return None
