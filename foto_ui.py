@@ -1,4 +1,4 @@
-# gezamenlijk deel Groep 1
+# User Interface opdracht foto
 #
 import os
 import sys
@@ -24,7 +24,8 @@ class Main_program:
                 "3": self.showcameras,
                 "4": self.fotosbijcamera,
                 "5": self.exif_locatie,
-                "9": self.quit
+                "6": self.exif_informatie,
+            #    "9": self.quit
                 }
 
 
@@ -37,13 +38,14 @@ class Main_program:
     # function that will print out the menu to the screen, ( needs some minor changes)
     def display_main_menu(self):
         print("""
-Menu
-1. Lijst van alle bestanden
-2. Lijst van alle camera bestanden
-3. Lijst van alle camera's en modellen
-4. Lijst van alle fotos horende bij de camera
-5. Lijst en export met locatie gegevens
-9. Quit
+Foto Menu
+1. List all files
+2. List all camera files
+3. List all camera brands and model
+4. List all files including brand and model
+5. List of all location information and export world-map
+6. List of all relevant EXIF information
+9. Go back to Main menu
 """)
 
     def main(self, log_location2):
@@ -60,6 +62,8 @@ Menu
             ui.Main_program().Logging().info("User input: %s",choice)
             if action:
                 action()
+            elif choice == "9":
+                break
             else:
                 ui.Main_program().Logging().info("Invalid input, restarting script")
                 print("{0} is not a valid choice".format(choice))
@@ -75,51 +79,137 @@ Menu
     def lijstallebestanden(self):
         try:
             foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
             if foto_image.endswith('.E01') == False:
                 print(foto_image + " is not an E01 Image file. Please try again")
                 foto_image = Main_program.openfile()
         except Exception:
-            Main_program()
+            self.run()
         try:
+            print(foto_image + " is selected as E01 file")
             print("This is the List all files that's now running")
             opdracht_foto.allebestanden(foto_image)
             ui.Main_program().Logging().info("Starting List all files")
         except Exception:
             print("Unknown file")
-            Main_program().run()
+            self.run()
         sys.exit(0)
 
     def allecamerabestanden(self):
-        ui.Main_program().Logging().info("Starting List all camera files")
-        print("This is the allecamerabestanden that's now running")
-        print("Ogenblik, dit kan even duren")
-        opdracht_foto.allecamerabestanden()
+        try:
+            foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
+            if foto_image.endswith('.E01') == False:
+                print(foto_image + " is not an E01 Image file. Please try again")
+                foto_image = Main_program.openfile()
+        except Exception:
+            self.run()
+        try:
+            print(foto_image + " is selected as E01 file")
+            print("This is the List all photo files that's now running")
+            print("Please wait, this can take some time")
+            opdracht_foto.allecamerabestanden(foto_image)
+            ui.Main_program().Logging().info("Starting List all camera files")
+        except Exception:
+            print("Unknown file")
+            self.run()
         sys.exit(0)
-
     def showcameras(self):
-        ui.Main_program().Logging().info("Starting showcameras")
-        print("This is the showcameras that's now running")
-        opdracht_foto.showcameras()
+        try:
+            foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
+            if foto_image.endswith('.E01') == False:
+                print(foto_image + " is not an E01 Image file. Please try again")
+                foto_image = Main_program.openfile()
+        except Exception:
+            self.run()
+        try:
+            print(foto_image + " is selected as E01 file")
+            print("This is the List all found camera's that's now running")
+            print("Please wait, this can take some time")
+            opdracht_foto.showcameras(foto_image)
+            ui.Main_program().Logging().info("Starting list all found camera's")
+        except Exception:
+            print("Unknown file")
+            self.run()
         sys.exit(0)
 
     def fotosbijcamera(self):
+        try:
+            foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
+            if foto_image.endswith('.E01') == False:
+                print(foto_image + " is not an E01 Image file. Please try again")
+                foto_image = Main_program.openfile()
+        except Exception:
+            self.run()
+        try:
+            print(foto_image + " is selected as E01 file")
+            print("This is the List all photo files and camera's that's now running")
+            print("Please wait, this can take some time")
+            opdracht_foto.fotosbijcamera(foto_image)
+            ui.Main_program().Logging().info("Starting List all photo files and camera's")
+        except Exception:
+            print("Unknown file")
+            self.run()
+        sys.exit(0)
+
         ui.Main_program().Logging().info("Starting fotosbijcamera")
         print("This is the fotosbijcamera that's now running")
         opdracht_foto.fotosbijcamera()
         sys.exit(0)
 
     def exif_locatie(self):
-        ui.Main_program().Logging().info("Starting exif_locatie")
-        print("This is the exif_locatie that's now running")
-        opdracht_foto.exif_locatie()
+        try:
+            foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
+            if foto_image.endswith('.E01') == False:
+                print(foto_image + " is not an E01 Image file. Please try again")
+                foto_image = Main_program.openfile()
+        except Exception:
+            self.run()
+        try:
+            print(foto_image + " is selected as E01 file")
+            print("This is the Show EXIF location information that's now running")
+            print("Please wait, this can take some time")
+            opdracht_foto.exif_locatie(foto_image)
+            ui.Main_program().Logging().info("Starting Show EXIF location Info")
+        except Exception:
+            print("Unknown file")
+            self.run()
+        sys.exit(0)
+
+    def exif_informatie(self):
+        try:
+            foto_image = Main_program.openfile()
+            print("Select the image file (.E01): ")
+            if foto_image.endswith('.E01') == False:
+                print(foto_image + " is not an E01 Image file. Please try again")
+                foto_image = Main_program.openfile()
+        except Exception:
+            self.run()
+        try:
+            print(foto_image + " is selected as E01 file")
+            print("This is the Show EXIF information that's now running")
+            print("Please wait, this can take some time")
+            opdracht_foto.exifinformatie(foto_image)
+            ui.Main_program().Logging().info("Starting Show EXIF Info")
+        except Exception:
+            print("Unknown file")
+            self.run()
         sys.exit(0)
 
     # will shutdown the script
     def quit(self):
-        ui.Main_program().Logging().info("Exiting script")
-        print("Exiting script the log files are written to: " + self.log_location )
-        sys.exit(0)
-
+        try:
+            ui.Main_program().Logging().info("Exiting script")
+            print("Exiting script the log files are written to: " + self.log_location )
+            sys.exit(0)
+        except Exception:
+            ui.Main_program().Logging().info("Exiting script")
+            print("Exiting script the log files are written to: " + self.log_location )
+            sys.exit(0)
+            pass
 #this function will run the main function when script is called
 if __name__ == "__main__":
     Main_program().run()
