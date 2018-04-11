@@ -6,6 +6,7 @@ import hashlib as hash
 import logging
 import opdracht_IP
 import opdracht_Gehakt
+import foto_ui as opdracht_foto
 from datetime import date
 import datetime
 from urllib.request import urlopen
@@ -27,6 +28,8 @@ class Main_program:
         self.sha256hash = hash.sha256()
         # will be used to check internet access
         self.internet_access = False
+
+        self.foto=opdracht_foto.Main_program()
         # will be used to instantiate the IP script
         self.IP = opdracht_IP.IP_filtering()
         # This variable will be used to creat the log folder if it doesn't exist
@@ -169,6 +172,7 @@ Menu
 
     def Foto_script(self):
         self.Logging().info("Starting Foto_Script")
+        self.foto.main(self.log_location)
         print("This is the Foto_script that's now running")
     # WIll start gehakt script
 
