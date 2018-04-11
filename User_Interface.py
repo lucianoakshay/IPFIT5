@@ -45,7 +45,7 @@ class Main_program:
         self.log_location = os.path.join(sys.path[0], 'log', 'Main_log_' + str(date.today())+'.log')
         # This variable will be used to set the compare file for the opdracht_IP script
         self.compare_file = None
-        self.ascii=False
+        self.ascii = False
 
         # will be used to set the choices in the main menu
         self.choices_main = {
