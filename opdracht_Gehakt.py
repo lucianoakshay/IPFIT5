@@ -104,9 +104,9 @@ class gehakt:
 
         # Ask if only wants to search in specific folder
         print("Bad file search can result in a lot of false positives because of various system files.")
-        spec_folder = input("Do you want to limit bad file search to a folder on the image (Yes/No): ")
+        spec_folder = input("Do you want to limit bad file search to a folder or keyword on the image (Yes/No): ")
         if spec_folder == "Y" or spec_folder == "y" or spec_folder == "Yes" or spec_folder == "yes":
-            folder = input("Please specify the path to this folder: ")
+            folder = input("Please specify the path to this folder or keyword: ")
 
         print("Searching for bad files")
         User_Interface.Main_program().Logging().info("Searching for bad files")
