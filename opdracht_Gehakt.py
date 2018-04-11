@@ -193,7 +193,10 @@ class gehakt:
 
     def textfile_checker(self, bad_logins, filepath):
         open_file = open(filepath, "r")
-        read_file = open_file.readlines()
+        try:
+            read_file = open_file.readlines()
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            return bad_logins
         for line in read_file:
             if "auth" in filepath:
                 if re.match("((.*)failed(.*)password(.*)|(.*)password(.*)failed(.*))", line, re.IGNORECASE):
@@ -217,7 +220,10 @@ class gehakt:
 
     def gzip_checker(self, bad_logins, filepath):
         open_file = gzip.open(filepath, "r")
-        read_file = open_file.readlines()
+        try:
+            read_file = open_file.readlines()
+        except (FileNotFoundError, UnicodeDecodeError, OSError):
+            return bad_logins
         for line in read_file:
             if "auth" in filepath:
                 if re.match("((.*)failed(.*)password(.*)|(.*)password(.*)failed(.*))", str(line), re.IGNORECASE):
