@@ -180,7 +180,7 @@ Menu
         self.Logging().info("Starting Gehakt_Script")
         gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
         filename, file_extension = os.path.splitext(gehakt_image)
-        while file_extension != ".dd":
+        while file_extension != ".dd" or os.path.isfile(gehakt_image) == False:
             print(gehakt_image + " is of type: " + file_extension + ". Please try again")
             gehakt_image = input("Input the location of the image (.dd / .e01(not yet implemented)): ")
         opdracht_Gehakt.gehakt.main_def(opdracht_Gehakt.gehakt(), gehakt_image)
