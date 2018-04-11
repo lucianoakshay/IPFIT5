@@ -10,6 +10,9 @@ import texttable as tt
 import table
 import User_Interface as ui
 import csv
+import main as fotomain
+import pyewf
+import pytsk3
 
 
 def get_exif_data(image):
@@ -17,7 +20,7 @@ def get_exif_data(image):
     Returns a dictionary from the exif data of a PIL Image item. Also converts the GPS Tags.
     """
     exif_data = {}
-    info = image._getexif()
+    info = Image.open(BytesIO(image))
     if info:
         for tag, value in info.items():
             decoded = TAGS.get(tag, tag)
@@ -129,29 +132,29 @@ def get_lon(exif_data):
     return lon
 
 
-def get_lat_lon_from_imagefile(filename):
+def get_lat_lon_from_imagefile(image):
     """
     Returns the latitude and longitude, if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lat_lon(exif_data)
 
-def get_lat_from_imagefile(filename):
+def get_lat_from_imagefile(image):
     """
     Returns the LAT if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lat(exif_data)
 
-def get_lon_from_imagefile(filename):
+def get_lon_from_imagefile(image):
     """
     Returns the LONGitude, if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lon(exif_data)
@@ -164,7 +167,7 @@ def mapplotter(filename):
 
     return None
 
-def moremapplotter(foldername, myList):
+def moremapplotter(image, aantal):
         gmap = gmplot.GoogleMapPlotter(52.370216, 4.895168, 8)
 #        file_lat, file_lon = get_lat_lon_from_imagefile(filename)
 #        gmap.marker(lat, lon, 'cornflowerblue')
@@ -178,8 +181,8 @@ def moremapplotter(foldername, myList):
 #        myList = filesinmap(foldername)
         myextraList = []
 
-        for x in myList:
-            myextraList.append(get_lat_lon_from_imagefile(foldername + '/' + x))
+        for x in aantal:
+            myextraList.append(get_lat_lon_from_imagefile(image))
 #            myextraList.append(file_lat, file_lon = get_lat_lon_from_imagefile(x))
         for x in myextraList:
 #            gmap.marker(x, 'cornflowerblue')
@@ -190,82 +193,16 @@ def moremapplotter(foldername, myList):
 #            print(x)
             gmap.scatter(lats, lons, 'cornflowerblue', edge_width=100)
 #            gmap.marker(51.904444444444444, 4.351388888888889, 'cornflowerblue')
-        gmap.draw("my_map_2.html")
+        gmap.draw("my_map_3.html")
 
         return None
 
-def filesinmap(foldername):
-        myList = []
-        for file in os.listdir(foldername):
-    #        print(os.path.join(file))
-            myList.append(file)
-#            ui.bereken_hash(file)
-
-        return myList
-def file_list(mounting_dir):
-    # Dictionary om alle files met hashes erbij op te slaan
-    file_dict = {}
-
-    # File counter die aan het begin alle files telt voor de progress bar
-    filecounter = 0
-    for filepath in self.walkdir(mounting_dir):
-        filecounter += 1
-
-    for filepath in tqdm(self.walkdir(mounting_dir), total=filecounter, unit="files"):
-        hash_waarde = bereken_hash2(filepath)
-        filename, file_extension = os.path.splitext(filepath)
-        file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
-
-    print(file_dict)
-    print(len(file_dict))
-    return file_dict
-
-def walkdir(folder):
-    """Walk through each files in a directory"""
-    for dirpath, dirs, files in os.walk(folder):
-        for filename in files:
-            yield os.path.abspath(os.path.join(dirpath, filename))
-
-def file_lijst(mounting_dir):
-    # Dictionary om alle files met hashes erbij op te slaan
-    file_dict = {}
-
-    # File counter die aan het begin alle files telt voor de progress bar
-    filecounter = 0
-    for filepath in walkdir(mounting_dir):
-        filecounter += 1
-
-    for filepath in tqdm(walkdir(mounting_dir), total=filecounter, unit="files"):
-        hash_waarde = ui.Main_program().bereken_hash(filepath)
-        filename, file_extension = os.path.splitext(filepath)
-        file_dict[filename] = {"Extension": file_extension, "Hash value": hash_waarde}
-
-    excel(file_dict)
-    print(file_dict)
-    print(len(file_dict))
-    return file_dict
-
-def excel(file_dict):
-    with open("/home/ipfit5/Desktop/github/IPFIT5/14-maart/IPFIT5/test.csv", "w", newline ='') as outfile:
-        fieldnames = ['FileName','Extension', 'Hash']
-        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-
-        writer.writeheader()
-#        for entries in file_dict:
-        writer.writerows(file_dict)
-#            outfile.write("\n")
-#            print(file_dict)
-
-#        for entries in file_dict:
-#            outfile.write(entries)
-#            outfile.write("\n")
-#            print(file_dict)
 
 def exifinformatie(image):
     # https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
     # Datum + tijd = 36867
     exif_data = {}
-    image = Image.open(image)
+    image = Image.open(BytesIO(image))
     info = image._getexif()
     model = "Model"
     make = "Make"
@@ -323,28 +260,29 @@ def voorbeeld(image):
                 exif_data[decoded] = value
 
     return exif_data
-if __name__ == "__main__":
 
-#    root = tk.Tk()
-#    root.withdraw()
 
-#    filename = filedialog.askopenfilename()
+def allebestanden(filepath):
 
-#    filename = sys.argv[1]
+    #filepath = "./imageusbstick.E01"
+    fotomain.EWFImgInfo.hashes(filepath)
 
-#    if os.path.isfile(filename):
-#        for file in os.listdir("./fotos"):
-#            print(os.path.join(file))
-#    print(get_lat_lon_from_imagefile(filename))
-#    mapplotter(filename)
+def allecamerabestanden():
 
-    foldername = "/home/ipfit5/Desktop/github/IPFIT5/14-maart/IPFIT5/fotos"
-#    print(filesinmap(foldername))
-#    file_lijst(foldername)
-    moremapplotter(foldername, filesinmap(foldername))
-    table.tabel(foldername)
-#    print(ui.Main_program().bereken_hash("/home/ipfit5/Desktop/github/IPFIT5/14-maart/IPFIT5/fotos/20170115_183156.jpg"))
-#    for file in os.listdir(foldername):
-#        print(ui.Main_program().bereken_hash(foldername + "/" + file))
-#        print(foldername + "/" + file)
-#        exifinformatie(foldername + "/" + file)
+    filepath = "./imageusbstick.E01"
+    fotomain.EWFImgInfo.onlyphotofiles(filepath)
+
+def showcameras():
+
+    filepath = "./imageusbstick.E01"
+    fotomain.EWFImgInfo.showcameras(filepath)
+
+def fotosbijcamera():
+
+    filepath = "./imageusbstick.E01"
+    fotomain.EWFImgInfo.fotosbijcamera(filepath)
+
+def exif_locatie():
+
+    filepath = "./imageusbstick.E01"
+    fotomain.EWFImgInfo.exif_locatie(filepath)

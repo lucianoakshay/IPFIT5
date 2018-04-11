@@ -8,11 +8,14 @@ import tkinter as tk
 from tkinter import filedialog
 import texttable as tt
 import User_Interface as ui
+from io import BytesIO
+
 
 def get_exif_data(image):
     """
     Returns a dictionary from the exif data of a PIL Image item. Also converts the GPS Tags.
     """
+    image = Image.open(BytesIO(image))
     exif_data = {}
     info = image._getexif()
     if info:
@@ -126,29 +129,29 @@ def get_lon(exif_data):
     return lon
 
 
-def get_lat_lon_from_imagefile(filename):
+def get_lat_lon_from_imagefile(image):
     """
     Returns the latitude and longitude, if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lat_lon(exif_data)
 
-def get_lat_from_imagefile(filename):
+def get_lat_from_imagefile(image):
     """
     Returns the LAT if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lat(exif_data)
 
-def get_lon_from_imagefile(filename):
+def get_lon_from_imagefile(image):
     """
     Returns the LONGitude, if available, for a given image file.
     """
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     exif_data = get_exif_data(image)
 
     return get_lon(exif_data)
@@ -161,11 +164,11 @@ def mapplotter(filename):
 
     return None
 
-def modeluitlezen(filename):
+def modeluitlezen(image):
     # https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
     # Datum + tijd = 36867
     exif_data = {}
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     info = image._getexif()
     model = "Model"
     make = "Make"
@@ -195,11 +198,11 @@ def modeluitlezen(filename):
 #                    print(value)
                     return value
 
-def merkuitlezen(filename):
+def merkuitlezen(image):
     # https://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
     # Datum + tijd = 36867
     exif_data = {}
-    image = Image.open(filename)
+    image = Image.open(BytesIO(image))
     info = image._getexif()
     model = "Model"
     make = "Make"
