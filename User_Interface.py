@@ -165,7 +165,6 @@ Menu
 
     def Foto_script(self):
         self.Logging().info("Starting Foto_Script")
-
         print("This is the Foto_script that's now running")
     # WIll start gehakt script
 
