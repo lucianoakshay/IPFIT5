@@ -112,7 +112,7 @@ class IP_filtering:
         output = self.Filter_IP(pcap_files)
 
         if output and self.compare_input is not None:
-            self.write_IP(output, self.ip_filename)
+            self.write_IP(output)
             compare_output = self.Compare(output, self.compare_input)
 
             if compare_output and internet:
@@ -133,7 +133,7 @@ class IP_filtering:
 
                 print("The following files have been created:" + self.ip_filename)
         elif output and self.compare_input is None:
-            self.write_IP(output, self.ip_filename)
+            self.write_IP(output)
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtered out IP-addresses")
             print("Created file:"+"\n"+self.ip_filename)
@@ -178,16 +178,16 @@ class IP_filtering:
             return socket.inet_ntop(socket.AF_INET6, ip_adress)
 
     #  will be used to write out the list of IP-adreses
-    def write_IP(self, input, filename):
+    def write_IP(self, input):
         self.Log.info("Writing IP_addresses to file:" + self.ip_filename)
 
-        with open(filename, 'w+') as file:
-            file.write('IP-address      count' + '\n')
+        with open(self.ip_filename, 'at') as file:
+            file.write("\n Source files: " + str(self.pcap_files) +  "\n")
+            file.write("_"*128 + "\n")
             for ip, value in input.items():
 
                 file.write('{0:<16} {1:>8}'.format(ip, str(value)) + '\n')
-            file.flush()
-        file.close()
+
 
     # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
     def Compare(self, IPlist, compare_input):
@@ -229,7 +229,8 @@ class IP_filtering:
 
     def write_compare(self, similarties):
         self.Log.info("Writing simalarites file to: " + self.similarties_filename)
-        with open(self.similarties_filename, 'w+')as file:
+
+        with open(self.similarties_filename, 'a+')as file:
             file.write("IP_addresses: \n")
             for ip in similarties:
                 file.write(ip + "\n")
