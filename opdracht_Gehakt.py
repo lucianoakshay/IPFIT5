@@ -23,14 +23,18 @@ class gehakt:
         bad_files = self.magic_test(file_dict)
 
         # Log checker function wordt aangeroepen om logs te doorlopen
-        log_dir = input("Logs are stored at: '" + mounting_dir + "/var/log'. Is this correct? (Yes/No) ")
-        if log_dir == "Y" or log_dir == "y" or log_dir == "Yes" or log_dir == "yes":
-            log_dir = mounting_dir + "/var/log"
+        check_logs = input("Do you want to check log files for failed logins?")
+        if check_logs == "Y" or check_logs == "y" or check_logs == "Yes" or check_logs == "yes":
+            log_dir = input("Logs are stored at: '" + mounting_dir + "/var/log'. Is this correct? (Yes/No) ")
+            if log_dir == "Y" or log_dir == "y" or log_dir == "Yes" or log_dir == "yes":
+                log_dir = mounting_dir + "/var/log"
+            else:
+                log_dir = input("Give the location of the log files: ")
+            while os.path.isdir(log_dir) == False:
+                log_dir = input("Give the location of the log files: ")
+            bad_logins = self.log_checker(log_dir)
         else:
-            log_dir = input("Give the location of the log files: ")
-        while os.path.isdir(log_dir) == False:
-            log_dir = input("Give the location of the log files: ")
-        bad_logins = self.log_checker(log_dir)
+            bad_logins = []
 
         # Timeline function wordt aangeroepen om een timeline te maken
         self.timeline_result(bad_files, bad_logins)
