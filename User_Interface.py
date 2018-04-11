@@ -45,6 +45,7 @@ class Main_program:
         self.log_location = os.path.join(sys.path[0], 'log', 'Main_log_' + str(date.today())+'.log')
         # This variable will be used to set the compare file for the opdracht_IP script
         self.compare_file = None
+        self.ascii=False
 
         # will be used to set the choices in the main menu
         self.choices_main = {
@@ -63,6 +64,7 @@ class Main_program:
     # function that will check if there's internet access
     def internet_on(self):
         try:
+            # will contact google
             urlopen('http://google.com', timeout=1)
             self.internet_access = True
             return True
@@ -70,6 +72,7 @@ class Main_program:
             self.internet_access = False
             print(err)
             return False
+        # if there is an timeout error set internet access to false
         except timeout:
             self.internet_access = False
             return False
@@ -150,6 +153,7 @@ Menu
     def IP_script(self):
 
         self.Logging().info("Starting IP_script")
+        # loop to check if input is valid
         while True:
             self.display_IP_menu()
             choice = input("Enter an option: ")
@@ -192,11 +196,12 @@ Menu
     def input_pcap_file(self):
         file_list = []
         hash_filename = "IP_hashes_"+str(date.today()) + ".txt"
-
+        # loop to check if the amount of the pcap's is between 1-10
         while True:
             amount = input('Input the amount of .pcap files you want to filter: ')
             try:
                 amount = int(amount)
+                # if amount is not between 1-10 raise error
                 if amount <= 0 or amount >= 11:
                     raise NotPositiveError
                 break
@@ -207,12 +212,16 @@ Menu
                     print("Please enter a positive number")
                 elif amount >= 11:
                     print("The amount of PCAP files exceeds 10")
-
+        # loop to
         for i in range(amount):
             while True:
+                # will ask for the location of the pcap file
                 user_input = input('Input pcap file or cancel C: ')
+                # will check if the file exists
                 if os.path.exists(user_input):
+                    # will check if the file is an .pcap file
                     if user_input.endswith('.pcap'):
+                        # will check if the file pcap file is not in the file_list
                         if (os.path.abspath(user_input)) not in file_list:
                             self.write_hash(user_input, hash_filename)
                             file_list.append(os.path.abspath(user_input))
@@ -228,9 +237,11 @@ Menu
                 else:
                     print("File doesn't exist please enter a valid filename.")
 
-        print("Do you want to compare these files against an other file?(Y/N/C)")
+        print("Do you want to compare these files against an IP_list?(Y/N/C)")
+        # loop to check the input
         while True:
             compare = input()
+            # if input is Y
             if compare == "Y":
                 print("Please enter the .txt file where you want to compare against:")
                 while True:
