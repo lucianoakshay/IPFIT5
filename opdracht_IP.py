@@ -49,15 +49,14 @@ class IP_filtering:
 
         self.IP_list = None
         # Will be used to set the filename for the WHOIS output
-        self.whois_filename = os.path.join(sys.path[0], 'Whois_info_' + str(date.today()) + ".csv")
+        self.whois_filename = None
 
         # Will be used to set the filename for the IP-adresses
-        self.ip_filename = os.path.join(sys.path[0], "IP_address_"+str(date.today())+".txt")
-
-        self.similarties_filename = os.path.join(sys.path[0], "Similarities_" + str(date.today()) + ".txt")
+        self.ip_filename = None
+        self.similarties_filename = None
 
         # Will be used to set the name of the timeline file
-        self.timeline_filename = os.path.join(sys.path[0], "Time_line output" + str(date.today()) + ".txt")
+        self.timeline_filename = None
 
         # Protocol list, will be used to determine the protocol when creating the timeline
         self.protocol_list = {
@@ -91,7 +90,8 @@ class IP_filtering:
             995: 'POP3 /ssl'
         }
 
-    # The main function that will be used to start the IP-script. needs 3 arguments, the location of the pcap files the location of the list with IP-addresses and a boolean value to check if there is internet access
+    # The main function that will be used to start the IP-script. needs 3 arguments, the location of the pcap files
+    # the location of the list with IP-addresses and a boolean value to check if there is internet access
     def main(self, pcap_files, compare_file, internet, location):
 
         self.whois_filename = os.path.join(location, 'Whois_info_' + str(date.today()) + ".csv")
@@ -136,7 +136,7 @@ class IP_filtering:
             self.write_IP(output)
             self.Log.info("Will only filter For IP-addresses and will not compare")
             print("Only filtered out IP-addresses")
-            print("Created file:"+"\n"+self.ip_filename)
+            print("Created file:" + "\n" + self.ip_filename)
         else:
             self.Log.info("No IP-addresses found in the files:" + str(pcap_files))
             print("No IP addresses could be found in the files:" + str(pcap_files))
@@ -149,19 +149,25 @@ class IP_filtering:
         self.bestanden = bestanden
         for bestand in self.bestanden:
             self.Log.info("Opening file: " + bestand)
+            # open the pcap file as a binary
             pcap = open(bestand, 'rb')
+            # assign the pcap reader to the file
             pcap = dpkt.pcap.Reader(pcap)
+            # for every timestamp / buffer in the pcap
             for timestamp, buf in pcap:
+                # is used to open the ethernet frame
                 eth = dpkt.ethernet.Ethernet(buf)
 
+                # if eth type is an IPv6
                 if eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                     ipv6 = eth.data
-
+                    # convert the IP-adress to human readable format and add to the counter
                     IP_list[self.convert_IP(ipv6.src)] += 1
                     IP_list[self.convert_IP(ipv6.dst)] += 1
-
+                # if IP-adress is an ipv4 address
                 elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
                     ip=eth.data
+                    # convert the IP-adress to human readable format and add to the counter
                     IP_list[self.convert_IP(ip.src)] += 1
                     IP_list[self.convert_IP(ip.dst)] += 1
 
@@ -193,22 +199,25 @@ class IP_filtering:
     def Compare(self, IPlist, compare_input):
         temp_list = []
         match_list = []
-        # print(list(IPlijst.keys())[0])
         self.Log.info("Reading the IP-list file: " + str(os.path.abspath(compare_input)))
+        # open the compare file
         bestand = open(os.path.abspath(compare_input), 'r')
+        # for every row in the file
         for rij in bestand:
+            # strip the enters to prevent them being added to the IP-adress
             rij = rij.strip('\n')
             try:
                 ipaddress.ip_address(rij)
                 temp_list.append(rij)
             except ValueError:
+                # if the IP-adres is not valid log error and notice user
                 self.Log.error("File seem to contain none valid IP-address")
                 self.Log.error("IP-address:" + str(rij) + " Will not be used to compare")
                 print("File seem to contain none valid IP-address")
                 print("IP-address:" + str(rij) + " Will not be used to compare")
                 print(temp_list)
                 continue
-
+        # loop to compare the output of filter IP and the compare_file
         for ip in list(IPlist.keys()):
             if ip in temp_list:
                 match_list.append(ip)
@@ -220,13 +229,12 @@ class IP_filtering:
 
             self.write_compare(match_list)
             return match_list
-
+        # if match list is empty then no matches has been found
         else:
             self.Log.info("No matches found")
         bestand.close()
-        # else:
-        #     User_Interface.Main_program().run()
 
+    # function to write out the similarities to a file
     def write_compare(self, similarties):
         self.Log.info("Writing simalarites file to: " + self.similarties_filename)
 
@@ -237,12 +245,14 @@ class IP_filtering:
 
     # function to get the whois information about an IP
     def WHOIS(self, match_list):
-        print(match_list)
+        # Create two dictionaries that will be used to add the WHOIS and DIG information
         whoisdict = {}
         dig_dictionary = {}
         for ip in match_list:
             indicator = {}
+
             self.Log.info("Writing WHOIS info to: " + self.whois_filename)
+            #
             with open(self.whois_filename, 'at', newline='') as file:
                 writer = csv.writer(file)
                 indicator['Queried_IP:'] = ip
@@ -251,8 +261,10 @@ class IP_filtering:
                     indicator['Queried_domain'] = "Private address space"
                     dig_dictionary['DIG:'] = "No values"
                 else:
+
                     self.Log.info("Quering WHOIS lookup for IP: " + str(ip))
                     try:
+                        #
                         indicator['Queried_domain'] = socket.getfqdn(ip)
                         tld = get_tld('http://'+socket.getfqdn(ip))
                         whoisdict = (pythonwhois.get_whois(tld))
@@ -260,13 +272,15 @@ class IP_filtering:
                         print(tld)
                         dig_dictionary = self.dig(tld)
                     except TldDomainNotFound as e:
+                        self.Log.error("TLD of :" + ip + "Couldn't'be found")
                         print("TLD of IP couldn't be found, check your internet access")
                         continue
                 # nog opzoek naar een betere whois, kan raw evt weglaten.
-
+                #     remove the raw key of the whois dict
                     del whoisdict["raw"]
                 indicator.update(whoisdict)
-                # string = string.strip('['+']'+"\\n")
+
+                # for every ket, value in indicator write them to an csv file
                 for key, value in indicator.items():
                     writer.writerow([key, value])
 
@@ -279,11 +293,13 @@ class IP_filtering:
         output = ''
         dig_dictionary = dict()
         self.Log.info("Preforming DIG on domain:" + domain)
+        # loop to try every record in IDS list
         for record in self.IDS:
             try:
 
                 answers = dns.resolver.query(domain, record)
                 for rdata in answers:
+                    # print the output to screen and append them to the output list
                     print(record + ':' + rdata.to_text()+"\n")
                     output += (record + ':' + rdata.to_text()+"\n")
                 dig_dictionary["DIG: "] = output
@@ -293,8 +309,9 @@ class IP_filtering:
                 continue  # or pass
         return dig_dictionary
 
+    # function to create the timeline
     def timeline(self, ip_list):
-        print(self.bestanden)
+
         for bestand in self.bestanden:
             self.Log.info("Opening pcap file" + os.path.join(sys.path[0], bestand))
             pcap = open(os.path.join(sys.path[0], bestand), 'rb')
