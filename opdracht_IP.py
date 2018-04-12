@@ -275,7 +275,7 @@ class IP_filtering:
                         indicator['Queried_domain'] = socket.getfqdn(ip)
                         tld = get_tld('http://'+socket.getfqdn(ip))
                         whoisdict = (pythonwhois.get_whois(tld))
-
+                        print("Quering the following domain: \n")
                         print(tld)
                         dig_dictionary = self.dig(tld)
                     except TldDomainNotFound as e:
@@ -300,6 +300,7 @@ class IP_filtering:
         output = ''
         dig_dictionary = dict()
         self.Log.info("Preforming DIG on domain:" + domain)
+        print("\nPreforming DIG :\n")
         # loop to try every record in IDS list
         for record in self.IDS:
             try:
