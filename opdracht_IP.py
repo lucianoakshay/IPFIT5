@@ -1,7 +1,6 @@
-# Individuele opdracht IP
+# Individuele opdracht: IP
 # Auteur: Koen van der sijs
 # Student nr: s1090241
-#
 import sys
 import ipaddress
 import datetime
@@ -14,15 +13,12 @@ import binascii
 from tld import get_tld
 from tld.exceptions import TldDomainNotFound
 import csv
-
-# make sure that the input files are add here also make this class more fault tolerant
-
-
 import socket
 from collections import Counter
 import User_Interface
-# need to fix write function
-# list of all possible dns records
+
+
+# list of the most common dns records
 class IP_filtering:
     IDS = [
             'A',
@@ -40,8 +36,9 @@ class IP_filtering:
         ]
 
     def __init__(self):
-        self.case_nr =  None
+        self.case_nr = None
         self.examiner = None
+        self.date = None
         # Will be used to set the logger in the main function
         self.Log = None
         # Will be used to set the compare file in the main function
@@ -110,14 +107,14 @@ class IP_filtering:
 
         self.compare_input = compare_file
         self.Log.info("Filtering files" + str(pcap_files))
-        output = self.Filter_IP(pcap_files)
+        output = self.filter_IP(pcap_files)
 
         if output and self.compare_input is not None:
             self.write_IP(output)
-            compare_output = self.Compare(output, self.compare_input)
+            compare_output = self.compare(output, self.compare_input)
 
             if compare_output and internet:
-                self.WHOIS(compare_output)
+                self.whois(compare_output)
                 self.timeline(compare_output)
                 self.Log.info("Created files:"+"\n"+self.ip_filename + "\n" + self.whois_filename + "\n"
                               + self.similarties_filename + "\n" + self.timeline_filename)
@@ -143,7 +140,7 @@ class IP_filtering:
             print("No IP addresses could be found in the files:" + str(pcap_files))
 
     # class that will filter the IP adresses that resides in an pcap file
-    def Filter_IP(self, bestanden):
+    def filter_IP(self, bestanden):
 
         IP_list = Counter()
 
@@ -167,7 +164,7 @@ class IP_filtering:
                     IP_list[self.convert_IP(ipv6.dst)] += 1
                 # if IP-adress is an ipv4 address
                 elif eth.type == dpkt.ethernet.ETH_TYPE_IP:
-                    ip=eth.data
+                    ip = eth.data
                     # convert the IP-adress to human readable format and add to the counter
                     IP_list[self.convert_IP(ip.src)] += 1
                     IP_list[self.convert_IP(ip.dst)] += 1
@@ -185,22 +182,21 @@ class IP_filtering:
             return socket.inet_ntop(socket.AF_INET6, ip_adress)
 
     #  will be used to write out the list of IP-adreses
-    def write_IP(self, input):
+    def write_IP(self, inputipaddress):
         self.Log.info("Writing IP_addresses to file:" + self.ip_filename)
 
         with open(self.ip_filename, 'at') as file:
             file.write("Examiner: " + self.examiner + "\n")
             file.write("Case number: " + self.case_nr + "\n")
             file.write("Date: " + self.date + "\n")
-            file.write("\n Source files: " + str(self.pcap_files) +  "\n")
+            file.write("\n Source files: " + str(self.pcap_files) + "\n")
             file.write("_"*128 + "\n")
-            for ip, value in input.items():
+            for ip, value in inputipaddress.items():
 
                 file.write('{0:<16} {1:>8}'.format(ip, str(value)) + '\n')
 
-
     # function that will compare the list of IP-adresses to the IP-adresses inside the pcap file
-    def Compare(self, IPlist, compare_input):
+    def compare(self, IPlist, compare_input):
         temp_list = []
         match_list = []
         self.Log.info("Reading the IP-list file: " + str(os.path.abspath(compare_input)))
@@ -251,7 +247,7 @@ class IP_filtering:
                 file.write(ip + "\n")
 
     # function to get the whois information about an IP
-    def WHOIS(self, match_list):
+    def whois(self, match_list):
         # Create two dictionaries that will be used to add the WHOIS and DIG information
         whoisdict = {}
         dig_dictionary = {}
@@ -278,16 +274,15 @@ class IP_filtering:
                         print("Quering the following domain: \n")
                         print(tld)
                         dig_dictionary = self.dig(tld)
-                    except TldDomainNotFound as e:
+                    except TldDomainNotFound:
                         self.Log.error("TLD of :" + ip + "Couldn't'be found")
                         print("TLD of IP couldn't be found, check your internet access")
                         continue
-                # nog opzoek naar een betere whois, kan raw evt weglaten.
-                #     remove the raw key of the whois dict
+                #     remove the raw key of the whois dict because that information is redundant
                     del whoisdict["raw"]
                 indicator.update(whoisdict)
 
-                # for every ket, value in indicator write them to an csv file
+                # for every key, value in indicator write them to an csv file
                 for key, value in indicator.items():
                     writer.writerow([key, value])
 
@@ -338,13 +333,16 @@ class IP_filtering:
                     if eth.type == dpkt.ethernet.ETH_TYPE_IP or eth.type == dpkt.ethernet.ETH_TYPE_IP6:
                         ipv4 = eth.data
                         # also check if IP.dst is equal to ip
-                        if(self.convert_IP(ipv4.src)) == ip:
+                        if self.convert_IP(ipv4.src) == ip or self.convert_IP(ipv4.dst) == ip:
+                            # open the timeline filename
                             with open(self.timeline_filename,  'at') as file:
+                                # print out the timestamp to the screen
                                 print('Timestamp: ' + str(datetime.datetime.utcfromtimestamp(timestamp)))
+                                # also write the timestamp and MAC adress to the file
                                 file.write('Timestamp: ' + str(datetime.datetime.utcfromtimestamp(timestamp)) + '\n')
                                 file.write('Mac Address: ' + self.convert_to_mac(binascii.hexlify(eth.src)) + "->"
                                            + self.convert_to_mac(binascii.hexlify(eth.dst)) + "\n")
-
+                                # if eth
                                 if eth.type == dpkt.ethernet.ETH_TYPE_IP:
                                     print('IP: %s -> %s   (len=%d ttl=%d)' % \
                                           (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst), ipv4.len, ipv4.ttl))
@@ -354,26 +352,27 @@ class IP_filtering:
                                 else:
                                     file.write('IP: %s -> %s ' % \
                                                (self.convert_IP(ipv4.src), self.convert_IP(ipv4.dst)))
-
+                                # if UDP
                                 if ipv4.p == dpkt.ip.IP_PROTO_UDP:
                                     udp = ipv4.data
                                     udp_source_port = udp.sport
                                     udp_destination_port = udp.dport
-                                    file.write("Protocol: UDP\n"
+                                    file.write("\nProtocol: UDP\n"
                                                "Source port: " + self.check_protocol(udp_source_port) + "\n"
                                                "Destination port: " + self.check_protocol(udp_destination_port) + '\n')
-
+                                # if TCP
                                 elif ipv4.p == dpkt.ip.IP_PROTO_TCP:
                                     tcp = ipv4.data
                                     tcp_source_port = tcp.sport
                                     tcp_destination_port = tcp.dport
-
-                                    file.write("Protocol: TCP\n"
+                                    # write source port and destination port to file
+                                    file.write("\nProtocol: TCP\n"
                                                "Source port: " + self.check_protocol(tcp_source_port) + "\n"
                                                "Destination port:" + self.check_protocol(tcp_destination_port) + '\n')
-
+                                # if protocol is ICMP only print out ICMP
                                 elif ipv4.p == dpkt.ip.IP_PROTO_ICMP:
                                     print("Protocol: ICMP")
+                                    file.write("Protocol: ICMP")
                                 else:
                                     print(ipv4.p)
                                 file.write("\n")
@@ -400,15 +399,9 @@ class IP_filtering:
         r = ":".join(s)
         return r
 
+    # will be used to add some COE information to the output files
     def coe_information(self):
         print("Please specify some information")
         self.case_nr = input("Case Number: ")
         self.examiner = input("Examiner: ")
         self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    # def generate_COE(self, file):
-    #     self.COE_location = None
-    #     with open(self.COE_location,'at') as file:
-    #         file.write("Case information: + \n")
-    #         file.write(self.examiner + "\n" + self.case_nr + "\n" + "Date: " + self.examiner)
-    #         User_Interface.Main_program().bereken_hash(file)
