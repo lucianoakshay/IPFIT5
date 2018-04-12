@@ -40,6 +40,8 @@ class IP_filtering:
         ]
 
     def __init__(self):
+        self.case_nr =  None
+        self.examiner = None
         # Will be used to set the logger in the main function
         self.Log = None
         # Will be used to set the compare file in the main function
@@ -103,7 +105,6 @@ class IP_filtering:
 
         # Will be used to set the name of the timeline file
         self.timeline_filename = os.path.join(location, "Time_line output" + str(date.today()) + ".txt")
-
         self.Log = User_Interface.Main_program().Logging()
         self.pcap_files = pcap_files
 
@@ -188,6 +189,9 @@ class IP_filtering:
         self.Log.info("Writing IP_addresses to file:" + self.ip_filename)
 
         with open(self.ip_filename, 'at') as file:
+            file.write("Examiner: " + self.examiner + "\n")
+            file.write("Case number: " + self.case_nr + "\n")
+            file.write("Date: " + self.date + "\n")
             file.write("\n Source files: " + str(self.pcap_files) +  "\n")
             file.write("_"*128 + "\n")
             for ip, value in input.items():
@@ -239,6 +243,9 @@ class IP_filtering:
         self.Log.info("Writing simalarites file to: " + self.similarties_filename)
 
         with open(self.similarties_filename, 'a+')as file:
+            file.write("Examiner: " + self.examiner + "\n")
+            file.write("Case number: " + self.case_nr + "\n")
+            file.write("Date: " + self.date + "\n")
             file.write("IP_addresses: \n")
             for ip in similarties:
                 file.write(ip + "\n")
@@ -311,6 +318,11 @@ class IP_filtering:
 
     # function to create the timeline
     def timeline(self, ip_list):
+        with open(self.timeline_filename, 'at') as file:
+            file.write("Examiner: " + self.examiner + "\n")
+            file.write("Case number: " + self.case_nr + "\n")
+            file.write("Date: " + self.date + "\n")
+
 
         for bestand in self.bestanden:
             self.Log.info("Opening pcap file" + os.path.join(sys.path[0], bestand))
@@ -386,3 +398,16 @@ class IP_filtering:
                 s.append(macadress[i*2:i*2+2].decode("utf-8"))
         r = ":".join(s)
         return r
+
+    def coe_information(self):
+        print("Please specify some information")
+        self.case_nr = input("Case Number: ")
+        self.examiner = input("Examiner: ")
+        self.date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    # def generate_COE(self, file):
+    #     self.COE_location = None
+    #     with open(self.COE_location,'at') as file:
+    #         file.write("Case information: + \n")
+    #         file.write(self.examiner + "\n" + self.case_nr + "\n" + "Date: " + self.examiner)
+    #         User_Interface.Main_program().bereken_hash(file)
