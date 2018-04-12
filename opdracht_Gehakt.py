@@ -10,6 +10,8 @@ import re
 from dateutil import parser
 import gzip
 
+#Jasper Balster s1100212
+#Gehakt script
 
 class gehakt:
 
