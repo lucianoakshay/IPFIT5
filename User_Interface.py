@@ -24,6 +24,7 @@ class Main_program:
     p = None
 
     def __init__(self):
+        self.file_information = False
         # will be used for the hashing function
         self.sha256hash = hash.sha256()
         # will be used to check internet access
@@ -189,6 +190,10 @@ Menu
     def input_pcap_file(self):
         file_list = []
         hash_filename = "IP_hashes_"+str(date.today()) + ".txt"
+        if self.file_information == False:
+            self.IP.coe_information()
+            self.file_information = True
+
         # loop to check if the amount of the pcap's is between 1-10
         while True:
             amount = input('Input the amount of .pcap files you want to filter: ')
@@ -265,6 +270,7 @@ Menu
             else:
                 print("That's not a valid input please enter either N/Y or C to cancel")
         self.IP.main(file_list, self.compare_file, self.internet_access, self.output_location)
+        self.file_information = False
 
     # Will be used to write the hash of a file to .txt file
     def write_hash(self, file, name):

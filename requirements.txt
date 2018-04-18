@@ -17,4 +17,4 @@ gmplot==1.2.0
 pytsk3==20180225
 texttable==1.2.1
 fleep==1.0.1
-libewf-python==20180204
+libewf-python

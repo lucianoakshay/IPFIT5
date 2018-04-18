@@ -1,3 +1,5 @@
+#Jasper Balster s1100212
+#Gehakt script mime dictionary
 dic = {
     '.old': ['text/plain','application/octet-stream','inode/x-empty','application/octet-stream','inode/symlink'],
     '.img': ['application/octet-stream','inode/x-empty','application/octet-stream','inode/symlink'],

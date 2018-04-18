@@ -10,6 +10,9 @@ import re
 from dateutil import parser
 import gzip
 
+#Jasper Balster s1100212
+#Gehakt script
+
 class gehakt:
 
     def main_def(self, user_input):
@@ -30,7 +33,7 @@ class gehakt:
                 log_dir = mounting_dir + "/var/log"
             else:
                 log_dir = input("Give the location of the log files: ")
-            while os.path.isdir(log_dir) == False:
+            while os.path.isdir(log_dir) is False:
                 log_dir = input("Give the location of the log files: ")
             bad_logins = self.log_checker(log_dir)
         else:
@@ -49,12 +52,12 @@ class gehakt:
         while final_input != "Q":
             final_input = input("Script finished, Q to to go back to main menu: ")
 
-    #Function to mount e01 or dd images
-    #E01 is not implemented yet
+    # Function to mount e01 or dd images
+    # E01 is not implemented yet
     def image_mount(self, given_dir):
         temporary_dir = input("Give a temporary mounting directory: ")
         # Checken of de directory bestaat. Indien dit niet het geval is wordt er gevraagd of deze aangemaakt moet worden.
-        while os.path.isdir(temporary_dir) == False:
+        while os.path.isdir(temporary_dir) is False:
             create_dir = input("Directory does not exist. Do you want it to be created? Yes/No ")
             if create_dir == "Yes" or create_dir == "Y" or create_dir == "y":
                 subprocess.call(["sudo", "mkdir", temporary_dir])
@@ -67,13 +70,11 @@ class gehakt:
         subprocess.call(["sudo", "mount", "-o", "ro", given_dir, temporary_dir])
         return temporary_dir
 
-
     def walkdir(self, folder):
         """Walk through each files in a directory"""
         for dirpath, dirs, files in os.walk(folder):
             for filename in files:
                 yield os.path.abspath(os.path.join(dirpath, filename))
-
 
     def file_list(self, mounting_dir):
         # Dictionary om alle files met hashes erbij op te slaan
@@ -97,9 +98,8 @@ class gehakt:
 
         return file_dict
 
-
     def magic_test(self, file_dict):
-        #List of bad files
+        # List of bad files
         bad_files = []
 
         # Ask if only wants to search in specific folder
@@ -156,7 +156,6 @@ class gehakt:
                 else:
                     User_Interface.Main_program().Logging().info(
                         "File with filepath: '" + file + "' not found in mime dictionary")
-
 
         print("Bad file search finished")
         User_Interface.Main_program().Logging().info("Bad file search finished")
