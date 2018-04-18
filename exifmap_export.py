@@ -1,16 +1,15 @@
+# Individuele opdracht: Foto
+# Auteur: Luciano Chanchal
+# Student nr: s1103554
+# Groep: 1
+# Exif gps tags export - opdracht foto
 from __future__ import print_function
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from gmplot import gmplot
 import sys, os
-import tkinter as tk
-from tkinter import filedialog
-import texttable as tt
-import User_Interface as ui
-import foto_main as fotomain
-import pyewf
-import pytsk3
 from io import BytesIO
+from datetime import date
 
 
 def get_exif_data(image):
@@ -160,15 +159,9 @@ def get_lon_from_imagefile(image):
 
     return get_lon(exif_data)
 
-def mapplotter(filename):
-    gmap = gmplot.GoogleMapPlotter(52.370216, 4.895168, 5)
-#    lat, lon = get_lat_lon_from_imagefile(filename)
-#    gmap.marker(lat, lon, 'cornflowerblue')
-#    gmap.draw("my_map_2.html")
-
-    return None
-
 def moremapplotter(image):
+        datum = str(date.today())
+        path = os.path.join(sys.path[0], 'output', 'Export_Map' + '_' + datum + '.html')
         gmap = gmplot.GoogleMapPlotter(52.370216, 4.895168, 8)
 
         myLat = []
@@ -187,24 +180,8 @@ def moremapplotter(image):
 
         gmap.scatter(myLat, myLon, 'cornflowerblue', edge_width=100)
 
-        gmap.draw("Export_Map.html")
+
+        gmap.draw(path)
+        print("\n A world-map with all the locations is exported to: \n" + path)
 
         return None
-
-def allebestanden(filepath):
-    fotomain.EWFImgInfo.allfiles(filepath)
-
-def allecamerabestanden(filepath):
-    fotomain.EWFImgInfo.onlyphotofiles(filepath)
-
-def showcameras(filepath):
-    fotomain.EWFImgInfo.showcameras(filepath)
-
-def fotosbijcamera(filepath):
-    fotomain.EWFImgInfo.fotosbijcamera(filepath)
-
-def exif_locatie(filepath):
-    fotomain.EWFImgInfo.exif_locatie(filepath)
-
-def exifinformatie(filepath):
-    fotomain.EWFImgInfo.exifinformatie(filepath)
