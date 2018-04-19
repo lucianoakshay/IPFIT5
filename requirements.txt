@@ -1,6 +1,7 @@
 chardet==3.0.4
 dpkt==1.9.1
 dnspython==1.15.0
+dnspython3==1.15.0
 ipwhois==1.0.0
 pythonwhois==2.4.3
 idna==2.6
