@@ -10,7 +10,7 @@ tqdm==4.19.7
 virustotal-api==1.1.10
 requests==2.18.4
 six==1.11.0
-urllib3==1.22
+urllib3==1.24.2
 python-magic==0.4.15
 python-dateutil==2.7.2
 Pillow==5.0.0
